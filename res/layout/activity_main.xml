@@ -1,0 +1,83 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <LinearLayout
+        android:id="@+id/buttomBar"
+        android:layout_width="fill_parent"
+        android:layout_height="70dp"
+        android:layout_alignParentBottom="true"
+        android:background="#FFFFFF" >
+
+        <TextView
+            android:id="@+id/buttomTab1"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:background="@drawable/actionbar_buttom_tab"
+            android:clickable="true"
+            android:drawableTop="@drawable/ic_tab1"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="@string/tab1_string"
+            android:textColor="#4d4d4d"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/buttomTab2"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:background="@drawable/actionbar_buttom_tab"
+            android:clickable="true"
+            android:drawableTop="@drawable/ic_tab2"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="@string/tab2_string"
+            android:textColor="#4d4d4d"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/buttomTab3"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:background="@drawable/actionbar_buttom_tab"
+            android:clickable="true"
+            android:drawableTop="@drawable/ic_tab3"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="@string/tab3_string"
+            android:textColor="#4d4d4d"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/buttomTab4"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_weight="1.0"
+            android:background="@drawable/actionbar_buttom_tab"
+            android:clickable="true"
+            android:drawableTop="@drawable/ic_tab4"
+            android:gravity="center"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:text="@string/tab4_string"
+            android:textColor="#4d4d4d"
+            android:textSize="15sp" />
+    </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/viewContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/buttomBar"
+        android:layout_gravity="center"
+        android:background="#000000"
+        android:flipInterval="30"
+        android:persistentDrawingCache="animation" />
+
+</RelativeLayout>

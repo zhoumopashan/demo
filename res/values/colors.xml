@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="text_fade_color">#55ffffff</color>
+    <color name="text_white_color">#ffffff</color>
+    <color name="actionbar_buttom_normal">#4d4d4d</color>
+    <color name="actionbar_buttom_press">#2a87e9</color>
+
+    <drawable name="toolsactivity_listview_normal">#edeff0</drawable>
+    <drawable name="toolsactivity_listview_press">#44000000</drawable>
+    <drawable name="color_edit_pic_undo_press">#33000000</drawable>
+    <drawable name="color_actionbar_back_press">#33000000</drawable>
+    
+    <drawable name="onclick_black_shado">#33000000</drawable>
+    <drawable name="onclick_sure_shado">#00bfff</drawable>
+    
+    <drawable name="color_black">#000000</drawable>
+    <drawable name="color_white">#ffffff</drawable>
+    <drawable name="color_red">#ff0000</drawable>
+    <drawable name="color_yellow">#ffff00</drawable>
+    <drawable name="color_blue">#0000ff</drawable>
+    <drawable name="color_transparent">#ffffffff</drawable>
+
+</resources>

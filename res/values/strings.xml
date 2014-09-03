@@ -1,0 +1,9 @@
+<resources>
+
+    <string name="app_name">Demo</string>
+
+    <string name="tab1_string">附近选民</string>
+    <string name="tab2_string">行程表</string>
+    <string name="tab3_string">评论</string>
+    <string name="tab4_string">个人中心</string>
+</resources>
