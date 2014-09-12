@@ -1,6 +1,0 @@
-# view res/layout/activity_main.xml #generated:73
--keep class android.support.v4.view.ViewPager { <init>(...); }
-
-# view AndroidManifest.xml #generated:15
--keep class com.luo.demo.ui.MainActivity { <init>(...); }
-

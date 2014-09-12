@@ -5,6 +5,9 @@ import android.app.Activity;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.luo.demo.R;
 import com.luo.demo.ui.viewpager.SubActivity;
 
@@ -13,6 +16,9 @@ public class Tab2SubActivity extends SubActivity implements OnClickListener {
 
 	private static final String TAG = "Tab2SubActivity";
 
+	// position
+	static final LatLng mMyPos = new LatLng(23, 120);
+	private GoogleMap mMap;
 
 
 	public Tab2SubActivity(Activity activity) {
@@ -70,7 +76,7 @@ public class Tab2SubActivity extends SubActivity implements OnClickListener {
 
 
 	private void initLayoutAndViews() {
-
+//		mMap = (MapFragment)
 	}
 
 }

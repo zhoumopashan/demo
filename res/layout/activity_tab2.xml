@@ -2,12 +2,10 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent" >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="行程表"
-        android:textColor="#4d4d4d"
-        android:textSize="30sp" />
+    <fragment 
+        android:id="@+id/map"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        class="com.google.android.gms.maps.MapFragment"/>
 
 </RelativeLayout>
