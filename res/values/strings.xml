@@ -6,4 +6,10 @@
     <string name="tab2_string">行程表</string>
     <string name="tab3_string">评论</string>
     <string name="tab4_string">个人中心</string>
+    
+    <string name="str_care">家长关怀</string>
+    <string name="str_wakeup">起床提醒</string>
+    <string name="str_sleep">睡眠提醒</string>
+    <string name="str_eat">吃饭提醒</string>
+    <string name="personal">自定义</string>
 </resources>
