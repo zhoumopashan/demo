@@ -161,7 +161,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			public boolean onTouch(View v, MotionEvent event) {
 				switch (event.getAction()) {
 				case MotionEvent.ACTION_DOWN:
-					mMainFuncArea.setBackgroundResource(R.drawable.color_blue);
+					mMainFuncArea.setBackgroundResource(R.drawable.main_outer_btn1);
 					break;
 
 				case MotionEvent.ACTION_UP:
@@ -177,12 +177,66 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 		mBtnParent = findViewById(R.id.btn3);
 		mBtnParent.setOnClickListener(this);
+		mBtnParent.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					mMainFuncArea.setBackgroundResource(R.drawable.main_outer_btn3);
+					break;
+
+				case MotionEvent.ACTION_UP:
+					mMainFuncArea.setBackgroundResource(R.drawable.main_outer_btn);
+					break;
+
+				default:
+					break;
+				}
+				return false;
+			}
+		});
 
 		mBtnSetting = findViewById(R.id.btn2);
 		mBtnSetting.setOnClickListener(this);
+		mBtnSetting.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					mMainFuncArea.setBackgroundResource(R.drawable.main_outer_btn2);
+					break;
+
+				case MotionEvent.ACTION_UP:
+					mMainFuncArea.setBackgroundResource(R.drawable.main_outer_btn);
+					break;
+
+				default:
+					break;
+				}
+				return false;
+			}
+		});
 
 		mBtnCare = findViewById(R.id.btn4);
 		mBtnCare.setOnClickListener(this);
+		mBtnCare.setOnTouchListener(new OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				switch (event.getAction()) {
+				case MotionEvent.ACTION_DOWN:
+					mMainFuncArea.setBackgroundResource(R.drawable.main_outer_btn4);
+					break;
+
+				case MotionEvent.ACTION_UP:
+					mMainFuncArea.setBackgroundResource(R.drawable.main_outer_btn);
+					break;
+
+				default:
+					break;
+				}
+				return false;
+			}
+		});
 
 		mMiddleBtn = findViewById(R.id.main_func_middle_btn);
 		mMiddleBtn.setOnClickListener(this);
