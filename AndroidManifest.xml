@@ -4,8 +4,22 @@
     android:versionName="1.0.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="14"
         android:targetSdkVersion="14" />
+
+    <!-- Google Play filtering -->
+    <uses-feature
+        android:name="android.hardware.wifi.direct"
+        android:required="true" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -15,20 +29,30 @@
         <activity
             android:name=".ui.MainActivity"
             android:screenOrientation="portrait" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".ui.ParentActivity"
             android:screenOrientation="portrait" >
         </activity>
-         <activity
+        <activity
             android:name=".ui.CareActivity"
             android:screenOrientation="portrait" >
         </activity>
+
+        <!-- Wifi P2p -->
+        <activity
+            android:name=".wifip2p.ui.WifiP2pConnectActivity"
+            android:screenOrientation="portrait" >
+             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".wifip2p.controller.WifiP2pService"
+            android:enabled="true" />
     </application>
 
 </manifest>

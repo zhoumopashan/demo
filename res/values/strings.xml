@@ -1,15 +1,38 @@
 <resources>
 
+    <!-- modules -->
     <string name="app_name">Demo</string>
-
-    <string name="tab1_string">附近选民</string>
-    <string name="tab2_string">行程表</string>
-    <string name="tab3_string">评论</string>
-    <string name="tab4_string">个人中心</string>
-    
     <string name="str_care">家长关怀</string>
     <string name="str_wakeup">起床提醒</string>
     <string name="str_sleep">睡眠提醒</string>
     <string name="str_eat">吃饭提醒</string>
     <string name="personal">自定义</string>
+    
+    <!-- Wifi p2p layouts -->
+    <string name="wifi_search_main_retry">重新搜索</string>
+    <string name="wifi_search_main_join">连接设备</string>
+    <string name="wifi_search_main_title">选择您要连接的设备：</string>
+    
+    <!-- Wifi p2p 提示 -->
+    <string name="wifip2p_p2p_not_open">您手机的wifi直联模式没有打开，请打开手机wifi，并取消当前正在连接的Wifi网络（Wifi路由器）</string>
+    <string name="wifip2p_p2p_scanning_title">注意</string>
+    <string name="wifip2p_p2p_scanning">正在扫描附近设备</string>
+    <string name="wifip2p_send_peerinfo_success">成功发送连接请求信息</string>
+    <string name="wifip2p_send_peerinfo_failed">发送连接请求信息失败</string>
+    <string name="wifip2p_send_file_success">文件发送成功</string>
+    <string name="wifip2p_send_file_failed">发送文件失败</string>
+    <string name="wifip2p_rcv_file_success">文件接收成功</string>
+    <string name="wifip2p_rcv_file_failed">接收文件失败</string>
+    <string name="wifip2p_rcv_peer_address">成功收到连接设备信息</string>
+    <string name="wifip2p_group_owner_text">Group owner :</string>
+    <string name="wifip2p_report_ip_tips">点击报告IP可以向Group owner 报告自身IP</string>
+    <string name="wifip2p_select_peer_dialog_title">请选择一个对等设备</string>
+    <string name="wifip2p_discovery_sucess">发现设备成功</string>
+    <string name="wifip2p_discovery_failed">搜索失败，错误码 :%1$d</string>
+    <string name="wifip2p_connecting">正在连接</string>
+    <string name="wifip2p_connecting_cancel">按返回键取消连接</string>
+    <string name="wifip2p_connecting_canceled">连接已取消</string>
+    <string name="wifip2p_connecting_cancel_failed">连接取消失败，错误码 :%1$d</string>
+    <string name="wifip2p_connecting_failed">连接失败</string>
+
 </resources>
