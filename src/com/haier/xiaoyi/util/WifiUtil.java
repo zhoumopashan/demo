@@ -1,4 +1,4 @@
-package com.haier.xiaoyi.wifip2p.util;
+package com.haier.xiaoyi.util;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -20,6 +20,8 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.SYSTEM_OVERLAY_WINDOW" />
 
     <application
         android:name=".MainApplication"
@@ -42,6 +44,12 @@
         </activity>
         <activity
             android:name=".ui.CareActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".util.DialogActivity"
+            android:theme="@android:style/Theme.Translucent" 
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
 

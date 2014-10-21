@@ -1,29 +1,31 @@
 package com.haier.xiaoyi.ui;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 import android.app.Activity;
-import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.net.Uri;
-import android.net.wifi.p2p.WifiP2pDevice;
-import android.net.wifi.p2p.WifiP2pDeviceList;
-import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
+import android.util.Pair;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
 
+import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
-import com.haier.xiaoyi.wifip2p.controller.WifiP2pActivityListener;
-import com.haier.xiaoyi.wifip2p.controller.WifiP2pService;
-import com.haier.xiaoyi.wifip2p.controller.WifiP2pService.WifiP2pServiceBinder;
+import com.haier.xiaoyi.wifip2p.module.Utility;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
-public class ParentActivity extends Activity implements View.OnClickListener,WifiP2pActivityListener {
+public class ParentActivity extends Activity implements View.OnClickListener{
 
 	/******************************
 	 * Macros <br>
@@ -47,32 +49,6 @@ public class ParentActivity extends Activity implements View.OnClickListener,Wif
 	 * InnerClass <br>
 	 ******************************/
 	
-	/** WifiP2pService and the Binder */
-	private WifiP2pService mP2pService;
-
-	public WifiP2pService getP2pService() {
-		return mP2pService;
-	}
-
-	/**
-	 * ServiceConnection , Use bind interact with service
-	 */
-	private ServiceConnection mServiceConn = new ServiceConnection() {
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			Logger.d(TAG, "bind service success");
-
-			WifiP2pServiceBinder binder = (WifiP2pServiceBinder) service;
-			mP2pService = binder.getService();
-
-			// register the listener to service
-			mP2pService.registerAcitivity(ParentActivity.this);
-		}
-
-		public void onServiceDisconnected(ComponentName name) {
-			Logger.d("ServiceConnection", "unbind service success");
-		}
-	};
-
 	/** Message Hander */
 	private MainHandler mMainHandler;
 
@@ -113,8 +89,6 @@ public class ParentActivity extends Activity implements View.OnClickListener,Wif
 	public void onResume() {
 		super.onResume();
 		
-		// add necessary intent values to be matched.
-		bindService(new Intent(this, WifiP2pService.class), mServiceConn, BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -131,11 +105,6 @@ public class ParentActivity extends Activity implements View.OnClickListener,Wif
 
 	@Override
 	public void onPause() {
-		if (mServiceConn != null) {
-			unbindService(mServiceConn);
-			mServiceConn = null;
-		}
-		
 		super.onPause();
 	}
 
@@ -179,14 +148,19 @@ public class ParentActivity extends Activity implements View.OnClickListener,Wif
 
 		if (requestCode == WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE) {
 			if (data == null) {
-				Logger.e(this.getClass().getName(), "onActivityResult data == null, no choice.");
+				Logger.e(TAG, "onActivityResult data == null, no choice.");
 				return;
 			}
 			Uri uri = data.getData();
-			mP2pService.getSendImageController().sendFile(uri , mP2pService);
+//			mP2pService.getSendImageController().sendFile(uri , mP2pService);
+//			((MainApplication)getApplication()).getXiaoyi().setPhotoUri(uri);
+//			startService(new Intent(this,WifiP2pService.class).setAction("send_photo"));
+			String host= ((MainApplication)getApplication()).getXiaoyi().getHostIp();
+			int port = WifiP2pConfigInfo.LISTEN_PORT;
+			new Thread(new MySendFileRunable(host,port,uri,getFileInfo(uri),getInputStream(uri))).start();
 		}
 	}
-
+	
 	/******************************
 	 * public Methods <br>
 	 ******************************/
@@ -226,52 +200,117 @@ public class ParentActivity extends Activity implements View.OnClickListener,Wif
 		intent.setType("image/*");
 		startActivityForResult(intent, WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE);
 	}
-
-	@Override
-	public void onConnectionInfoAvailable(WifiP2pInfo info) {
-		// TODO Auto-generated method stub
+	
+	/** Get the file's info */
+	public String getFileInfo(Uri uri){
+		// get the name & fileSize of the uri-file
+		Pair<String, Integer> pair;
+		try {
+			pair = Utility.getFileNameAndSize(ParentActivity.this, uri);
+		} catch (IOException e) {
+			return null;
+		}
+		String name = pair.first;
+		long size = pair.second;
 		
+		return "size:" + size + "name:" + name;
+	}
+	
+	/**
+	 * Get the file's inputStream by uri
+	 */
+	public InputStream getInputStream(Uri uri) {
+		ContentResolver cr = getContentResolver();
+		try {
+			return cr.openInputStream(uri);
+		} catch (FileNotFoundException e) {
+			return null;
+		}
 	}
 
-	@Override
-	public void onPeersAvailable(WifiP2pDeviceList peers) {
-		// TODO Auto-generated method stub
+	/**
+	 * A send file task, send the file(uri) to the device mark by host & port
+	 * @author luochenxun
+	 */
+	class MySendFileRunable implements Runnable {
 		
-	}
-
-	@Override
-	public void showDiscoverPeers() {
-		// TODO Auto-generated method stub
+		private String host;
+		private int port;
+		private Uri uri;
+		private String fileInfo;
+		private InputStream ins;
 		
-	}
-
-	@Override
-	public void onDisconnect() {
-		// TODO Auto-generated method stub
+		MySendFileRunable(String host, int port, Uri uri , String info ,InputStream in) {
+			this.host = host;
+			this.port = port;
+			this.uri = uri;
+			this.fileInfo = info;
+			ins = in;
+		}
 		
-	}
-
-	@Override
-	public void resetPeers() {
-		// TODO Auto-generated method stub
+		@Override
+		public void run() {
+			sendFile();
+		}
 		
-	}
+		private boolean sendFile() {
+			Boolean result = Boolean.TRUE;
+			Socket socket = new Socket();
+			try {
+				// connect the dst server
+				socket.bind(null);
+				socket.connect((new InetSocketAddress(host, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);
+				Logger.d(this.getClass().getName(), "Client socket - " + socket.isConnected());
+				
+				// Get the file's info
+				OutputStream outs = socket.getOutputStream();
+				
+				// output the commandId
+				outs.write(WifiP2pConfigInfo.COMMAND_ID_SEND_FILE);
+				
+				// output the file's info
+				if(fileInfo == null){
+					return false;
+				}
+				Logger.d(this.getClass().getName(), "fileInfo:" + fileInfo);
+				outs.write(fileInfo.length());
+				outs.write(fileInfo.getBytes(), 0, fileInfo.length());
+				
+				// output the file's stream
+				if(ins == null){
+					return false;
+				}
+				byte buf[] = new byte[1024];
+				int len;
+				while ((len = ins.read(buf)) != -1) {
+					outs.write(buf, 0, len);
+				}
 
-	@Override
-	public void updateLocalDevice(WifiP2pDevice device) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void sendMessage(Message msg) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Activity getActivity() {
-		return this;
+				// close socket
+				ins.close();
+				outs.close();
+				Logger.d(this.getClass().getName(), "Client: Data written");
+			} catch (FileNotFoundException e) {
+				Logger.d(this.getClass().getName(), "send file exception " + e.toString());
+			} catch (IOException e) {
+				Logger.e(this.getClass().getName(),
+						"send file exception " + e.getMessage());
+				result = Boolean.FALSE;
+			} finally {
+				if (socket != null) {
+					if (socket.isConnected()) {
+						try {
+							socket.close();
+							Logger.d(this.getClass().getName(), "socket.close()");
+						} catch (IOException e) {
+							// Give up
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			return result;
+		}
 	}
 
 }

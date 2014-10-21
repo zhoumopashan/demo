@@ -20,7 +20,7 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Pair;
 
-import com.haier.xiaoyi.wifip2p.util.Logger;
+import com.haier.xiaoyi.util.Logger;
 
 public class Utility {
 	

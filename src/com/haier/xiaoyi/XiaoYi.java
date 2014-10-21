@@ -1,5 +1,6 @@
 package com.haier.xiaoyi;
 
+import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 
@@ -10,6 +11,7 @@ public class XiaoYi {
 	private WifiP2pDevice mDevice;
 	private WifiP2pInfo mWifiP2pInfo;
 	private String mHostIp = null;
+	private Uri mPhotoUri = null;
 
 	public int getVolice() {
 		return mVolice;
@@ -57,5 +59,13 @@ public class XiaoYi {
 
 	public void setHostIp(String mHostIp) {
 		this.mHostIp = mHostIp;
+	}
+
+	public Uri getPhotoUri() {
+		return mPhotoUri;
+	}
+
+	public void setPhotoUri(Uri mPhotoUri) {
+		this.mPhotoUri = mPhotoUri;
 	}
 }

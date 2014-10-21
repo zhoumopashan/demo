@@ -8,7 +8,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.text.TextUtils;
 
-import com.haier.xiaoyi.wifip2p.util.Logger;
+import com.haier.xiaoyi.util.Logger;
 
 /**
  * A BroadcastReceiver that notifies of important wifi p2p events.
@@ -56,7 +56,7 @@ public class WifiP2pBroadcastReceiver extends BroadcastReceiver {
 			if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
 				// Wifi Direct mode is enabled
 				mP2pService.setIsWifiP2pEnabled(true);
-//				mP2pService.discoverPeers();
+				mP2pService.discoverPeers();
 			} else {
 				mP2pService.setIsWifiP2pEnabled(false);
 				mP2pService.resetPeers();

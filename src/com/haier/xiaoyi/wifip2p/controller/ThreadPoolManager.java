@@ -15,8 +15,8 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
 
+import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
-import com.haier.xiaoyi.wifip2p.util.Logger;
 
 /**
  * It's a HandlerThread bind by WifiP2pService
@@ -206,20 +206,17 @@ class HandleAcceptSocket implements Runnable {
 				lockRecvFile.lock();
 				try {
 					mService.setRemoteSockAddress(sockAddr);
-					mService.handleRecvFile(ins);
+//					mService.handleRecvFile(ins);
 				} finally {
 					lockRecvFile.unlock();
 				}
 			} 
 			else if (iCommand == WifiP2pConfigInfo.COMMAND_ID_REQUEST_SEND_FILE) {
-				mService.handleRecvFileInfo(ins);
+//				mService.handleRecvFileInfo(ins);
 			} 
 			else if (iCommand == WifiP2pConfigInfo.COMMAND_ID_RESPONSE_SEND_FILE) {
 				// TODO ...
 			} 
-			else if (iCommand == WifiP2pConfigInfo.COMMAND_ID_BROADCAST_PEER_LIST) {
-				mService.handleRecvPeerList(ins);
-			}  
 			else if (iCommand == WifiP2pConfigInfo.COMMAND_ID_SEND_STRING) {
 				// TODO ...
 			}

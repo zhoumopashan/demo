@@ -1,6 +1,5 @@
 package com.haier.xiaoyi.wifip2p.module;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,8 +8,8 @@ import java.net.Socket;
 
 import android.net.Uri;
 
+import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.wifip2p.controller.WifiP2pService;
-import com.haier.xiaoyi.wifip2p.util.Logger;
 
 /**
  * Wrap all runnable
@@ -48,12 +47,7 @@ class SendPeerInfoRunable  implements Runnable {
 	
 	@Override
 	public void run() {
-		if (Utility.sendPeerInfo(peerInfo.host, peerInfo.port)){
-			mService.postSendPeerInfoResult(0);
-		}
-		else{
-			mService.postSendPeerInfoResult(-1);
-		}
+		Utility.sendPeerInfo(peerInfo.host, peerInfo.port);
 	}	
 }
 
@@ -79,69 +73,67 @@ class SendFileRunable implements Runnable {
 	
 	@Override
 	public void run() {
-		if (sendFile()){
-			mService.getSendImageController().postSendFileResult(0);
-		}else{
-			mService.getSendImageController().postSendFileResult(-1);
-		}
+		sendFile();
 	}
 
 	private boolean sendFile() {
-		Boolean result = Boolean.TRUE;
-		Socket socket = new Socket();
-		try {
-			// connect the dst server
-			Logger.d(this.getClass().getName(), "Opening client socket - ");
-			socket.bind(null);
-			socket.connect((new InetSocketAddress(host, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);
-			Logger.d(this.getClass().getName(), "Client socket - " + socket.isConnected());
-			
-			// Get the file's info
-			OutputStream outs = socket.getOutputStream();
-			
-			// output the commandId
-			outs.write(WifiP2pConfigInfo.COMMAND_ID_SEND_FILE);
-			
-			// output the file's info
-			String fileInfo = mService.getSendImageController().getFileInfo(uri);
-			Logger.d(this.getClass().getName(), "fileInfo:" + fileInfo);
-			outs.write(fileInfo.length());
-			outs.write(fileInfo.getBytes(), 0, fileInfo.length());
-			
-			// output the file's stream
-			InputStream ins = mService.getSendImageController().getInputStream(uri);
-			byte buf[] = new byte[1024];
-			int len;
-			while ((len = ins.read(buf)) != -1) {
-				outs.write(buf, 0, len);
-				mService.getSendImageController().postRecvBytes(len, 0);
-			}
-
-			// close socket
-			ins.close();
-			outs.close();
-			Logger.d(this.getClass().getName(), "Client: Data written");
-		} catch (FileNotFoundException e) {
-			Logger.d(this.getClass().getName(), "send file exception " + e.toString());
-		} catch (IOException e) {
-			Logger.e(this.getClass().getName(),
-					"send file exception " + e.getMessage());
-			result = Boolean.FALSE;
-		} finally {
-			if (socket != null) {
-				if (socket.isConnected()) {
-					try {
-						socket.close();
-						Logger.d(this.getClass().getName(), "socket.close()");
-					} catch (IOException e) {
-						// Give up
-						e.printStackTrace();
-					}
-				}
-			}
-		}
-		return result;
+		return false;
 	}
+//		Boolean result = Boolean.TRUE;
+//		Socket socket = new Socket();
+//		try {
+//			// connect the dst server
+//			Logger.d(this.getClass().getName(), "Opening client socket - ");
+//			socket.bind(null);
+//			socket.connect((new InetSocketAddress(host, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);
+//			Logger.d(this.getClass().getName(), "Client socket - " + socket.isConnected());
+//			
+//			// Get the file's info
+//			OutputStream outs = socket.getOutputStream();
+//			
+//			// output the commandId
+//			outs.write(WifiP2pConfigInfo.COMMAND_ID_SEND_FILE);
+//			
+//			// output the file's info
+//			String fileInfo = mService.getSendImageController().getFileInfo(uri);
+//			Logger.d(this.getClass().getName(), "fileInfo:" + fileInfo);
+//			outs.write(fileInfo.length());
+//			outs.write(fileInfo.getBytes(), 0, fileInfo.length());
+//			
+//			// output the file's stream
+//			InputStream ins = mService.getSendImageController().getInputStream(uri);
+//			byte buf[] = new byte[1024];
+//			int len;
+//			while ((len = ins.read(buf)) != -1) {
+//				outs.write(buf, 0, len);
+//				mService.getSendImageController().postRecvBytes(len, 0);
+//			}
+//
+//			// close socket
+//			ins.close();
+//			outs.close();
+//			Logger.d(this.getClass().getName(), "Client: Data written");
+//		} catch (FileNotFoundException e) {
+//			Logger.d(this.getClass().getName(), "send file exception " + e.toString());
+//		} catch (IOException e) {
+//			Logger.e(this.getClass().getName(),
+//					"send file exception " + e.getMessage());
+//			result = Boolean.FALSE;
+//		} finally {
+//			if (socket != null) {
+//				if (socket.isConnected()) {
+//					try {
+//						socket.close();
+//						Logger.d(this.getClass().getName(), "socket.close()");
+//					} catch (IOException e) {
+//						// Give up
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		}
+//		return result;
+//	}
 }
 
 /**

@@ -15,15 +15,16 @@ import android.os.Environment;
 import android.os.Message;
 import android.util.Pair;
 
+import com.haier.xiaoyi.MainApplication;
+import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.wifip2p.module.Utility;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
-import com.haier.xiaoyi.wifip2p.util.Logger;
 
 public class SendImageController {
 	
 	private static final String TAG = "SendImageController";
 	
-	private WifiP2pActivityListener mActivity; 
+	private MainApplication mApplication;
 	
 	/** About SendFile and ReceiveFile */
 	private long mRecvFileSize = 0;
@@ -58,8 +59,8 @@ public class SendImageController {
 		
 	}
 	
-	SendImageController(WifiP2pActivityListener listener){
-		mActivity = listener;
+	SendImageController(MainApplication application){
+		mApplication = application;
 	}
 	
 	/** Getter & Setter */
@@ -162,92 +163,71 @@ public class SendImageController {
 	 * @param uri
 	 * @param p2pService
 	 */
-	public void sendFile(Uri uri, WifiP2pService p2pService) {
+	public void sendFile() {
 		if (!mIsSendingFile) {
 			mIsSendingFile = true;
 			resetSendFileInfo();
-			String host = "";
-			if (p2pService.isPeer()) {
-//				host = p2pService.getHostAddress();
-				host = ma;
-			} else {
-				host = mSelectHost;
-			}
-			int port = WifiP2pConfigInfo.LISTEN_PORT;
-			// send file 
-			p2pService.handleSendFile(host, port, uri);
-			Logger.d(TAG, "send host:" + host + "port:" + port + "uri:" + uri);
+//			String host = "";
+//			if (!mApplication.getXiaoyi().getWifiP2pInfo().isGroupOwner) {
+////				host = p2pService.getHostAddress();
+//				host = mApplication.getXiaoyi().getHostIp();
+//			} else {
+//				host = mSelectHost;
+//			}
+//			int port = WifiP2pConfigInfo.LISTEN_PORT;
+//			// send file 
+//			p2pService.handleSendFile(host, port, uri);
+//			Logger.d(TAG, "send host:" + host + "port:" + port + "uri:" + uri);
 		} 
 	}
 	
-	/** Get the file's info */
-	public String getFileInfo(Uri uri) throws IOException {
-		// get the name & fileSize of the uri-file
-		Pair<String, Integer> pair = Utility.getFileNameAndSize((Activity)mActivity, uri);
-		String name = pair.first;
-		long size = pair.second;
-		
-		// set the file's name & size
-		setSendFileName(name);
-		setSendFileSize(size);
-		
-		return "size:" + size + "name:" + name;
-	}
-	
-	/**
-	 * Get the file's inputStream by uri
-	 */
-	public InputStream getInputStream(Uri uri) throws FileNotFoundException {
-		ContentResolver cr = ((Activity)mActivity).getContentResolver();
-		return cr.openInputStream(uri);
-	}
 	
 	/** Send file finished */
 	public void onSendFileEnd() {
 		mIsSendingFile = false;
 	}
 	
-	/**
-	 * Call when receive file's inputStream from socket
-	 */
-	public void handleRecvFile(InputStream ins) {
-		// Mark the file's info
-		handleRecvFileInfo(ins);
-
-		// Wait for ui's comfirm
-		String extName = ".jpg"; // default .
-		if (!mRecvFileName.isEmpty()) {
-			int dotIndex = mRecvFileName.lastIndexOf(".");
-			if (dotIndex != -1 && dotIndex != mRecvFileName.length() - 1) {
-				extName =mRecvFileName.substring(dotIndex);
-			}
-		}
-		Logger.d(TAG, "传输文件名：" + mRecvFileName + " ， 后缀 extName:" + extName);
-
-		// Wait for ui's comfirm
-		if (waitForVerifyRecvFile() && isbVerifyRecvFile()) {
-			Logger.d(TAG, "接收成功");
-			recvFileAndSave(ins, extName);
-		} else{
-			Logger.d(TAG, "接收失败");
-			postRecvFileResult(-1);
-		}
-	}
+//	/**
+//	 * Call when receive file's inputStream from socket
+//	 */
+//	public void handleRecvFile(InputStream ins) {
+//		// Mark the file's info
+//		handleRecvFileInfo(ins);
+//
+//		// Wait for ui's comfirm
+//		String extName = ".jpg"; // default .
+//		if (!mRecvFileName.isEmpty()) {
+//			int dotIndex = mRecvFileName.lastIndexOf(".");
+//			if (dotIndex != -1 && dotIndex != mRecvFileName.length() - 1) {
+//				extName =mRecvFileName.substring(dotIndex);
+//			}
+//		}
+//		Logger.d(TAG, "传输文件名：" + mRecvFileName + " ， 后缀 extName:" + extName);
+//
+//		// Wait for ui's comfirm
+//		if (waitForVerifyRecvFile() && isbVerifyRecvFile()) {
+//			Logger.d(TAG, "接收成功");
+//			recvFileAndSave(ins, extName);
+//		} else{
+//			Logger.d(TAG, "接收失败");
+//			postRecvFileResult(-1);
+//		}
+//	}
 	
-	public void postRecvFileResult(int result) {
-		Message msg = new Message();
-		msg.what = WifiP2pConfigInfo.MSG_REPORT_RECV_FILE_RESULT;
-		msg.arg1 = result;
-		mActivity.sendMessage(msg);
-	}
-	
-	public void postSendRecvBytes(int sendBytes, int recvBytes){
-		Message msg = new Message();
-		msg.what = WifiP2pConfigInfo.MSG_SEND_RECV_FILE_BYTES;
-		msg.arg1 = sendBytes;// send;
-		msg.arg2 = recvBytes;// recv;
-		mActivity.sendMessage(msg);		
-	}
+//	public void postRecvFileResult(int result) {
+//		Message msg = new Message();
+//		msg.what = WifiP2pConfigInfo.MSG_REPORT_RECV_FILE_RESULT;
+//		msg.arg1 = result;
+//		mActivity.sendMessage(msg);
+//	}
+//	
+//	public void postSendRecvBytes(int sendBytes, int recvBytes){
+//		Message msg = new Message();
+//		msg.what = WifiP2pConfigInfo.MSG_SEND_RECV_FILE_BYTES;
+//		msg.arg1 = sendBytes;// send;
+//		msg.arg2 = recvBytes;// recv;
+//		mActivity.sendMessage(msg);		
+//	}
 	
 	private boolean bVerifyRecvFile = false;
 	public boolean isbVerifyRecvFile() {
@@ -257,107 +237,107 @@ public class SendImageController {
 		this.bVerifyRecvFile = bVerifyRecvFile;
 	}
 	
-	/**
-	 * Handle receive file's inputStream from socket
-	 */
-	public boolean handleRecvFileInfo(InputStream ins) {
-		// reset the member of the controller
-		resetRecvFileInfo();
-		
-		// receive the file's info
-		try {
-			int iSize = ins.read();
-			byte[] buffer = new byte[iSize];
-			int len = ins.read(buffer, 0, iSize);
-			String strBuffer = new String(buffer, 0, len);
-			int offset1 = strBuffer.indexOf("size:");
-			int offset2 = strBuffer.indexOf("name:");
-			Logger.d(TAG, "recvDistFileInfo strBuffer:" + strBuffer);
-			if (offset1 != -1 && offset2 != -1) {
-				String strSize = strBuffer.substring(offset1 + 5, offset2);
-				mRecvFileSize = Long.parseLong(strSize);
-				mRecvFileName = strBuffer.substring(offset2 + 5, strBuffer.length());
-
-				Logger.d(TAG, "iFileSize:" + mRecvFileSize + " \nstrFileName:" + mRecvFileName);
-				
-				// show the verify dialog
-				postVerifyRecvFile();
-				return true;
-			}
-			return false;
-		} catch (IOException e) {
-			Logger.e( TAG, e.getMessage() );
-			return false;
-		}
-	}
-	
-	public boolean recvFileAndSave(InputStream ins, String extName) {
-		try {
-			final File recvFile = new File(
-					Environment.getExternalStorageDirectory()
-							+ "/file-"
-							+ System.currentTimeMillis() + extName);
-
-			File dirs = new File(recvFile.getParent());
-			if (!dirs.exists())
-				dirs.mkdirs();
-			recvFile.createNewFile();
-
-			FileOutputStream fileOutS = new FileOutputStream(recvFile);
-
-			byte buf[] = new byte[1024];
-			int len;
-			while ((len = ins.read(buf)) != -1) {
-				fileOutS.write(buf, 0, len);
-				// Call back the ui for progress
-				postSendRecvBytes(0, len);
-
-			}
-			fileOutS.close();
-			String strFile = recvFile.getAbsolutePath();
-			if (strFile != null) {
-				//  Go, let's go and test a new cool & powerful method.
-				Utility.openFile(mActivity.getActivity(), recvFile);
-			}
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
+//	/**
+//	 * Handle receive file's inputStream from socket
+//	 */
+//	public boolean handleRecvFileInfo(InputStream ins) {
+//		// reset the member of the controller
+//		resetRecvFileInfo();
+//		
+//		// receive the file's info
+//		try {
+//			int iSize = ins.read();
+//			byte[] buffer = new byte[iSize];
+//			int len = ins.read(buffer, 0, iSize);
+//			String strBuffer = new String(buffer, 0, len);
+//			int offset1 = strBuffer.indexOf("size:");
+//			int offset2 = strBuffer.indexOf("name:");
+//			Logger.d(TAG, "recvDistFileInfo strBuffer:" + strBuffer);
+//			if (offset1 != -1 && offset2 != -1) {
+//				String strSize = strBuffer.substring(offset1 + 5, offset2);
+//				mRecvFileSize = Long.parseLong(strSize);
+//				mRecvFileName = strBuffer.substring(offset2 + 5, strBuffer.length());
+//
+//				Logger.d(TAG, "iFileSize:" + mRecvFileSize + " \nstrFileName:" + mRecvFileName);
+//				
+//				// show the verify dialog
+//				postVerifyRecvFile();
+//				return true;
+//			}
+//			return false;
+//		} catch (IOException e) {
+//			Logger.e( TAG, e.getMessage() );
+//			return false;
+//		}
+//	}
+//	
+//	public boolean recvFileAndSave(InputStream ins, String extName) {
+//		try {
+//			final File recvFile = new File(
+//					Environment.getExternalStorageDirectory()
+//							+ "/file-"
+//							+ System.currentTimeMillis() + extName);
+//
+//			File dirs = new File(recvFile.getParent());
+//			if (!dirs.exists())
+//				dirs.mkdirs();
+//			recvFile.createNewFile();
+//
+//			FileOutputStream fileOutS = new FileOutputStream(recvFile);
+//
+//			byte buf[] = new byte[1024];
+//			int len;
+//			while ((len = ins.read(buf)) != -1) {
+//				fileOutS.write(buf, 0, len);
+//				// Call back the ui for progress
+//				postSendRecvBytes(0, len);
+//
+//			}
+//			fileOutS.close();
+//			String strFile = recvFile.getAbsolutePath();
+//			if (strFile != null) {
+//				//  Go, let's go and test a new cool & powerful method.
+//				Utility.openFile(mActivity.getActivity(), recvFile);
+//			}
+//			return true;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+//	}
 	
 	/*************************
 	 * UI's callback
 	 *********************/
 	
-	/**
-	 *  post send-file-result to ui 
-	 */
-	public void postSendFileResult(int result) {
-		Message msg = new Message();
-		msg.what = WifiP2pConfigInfo.MSG_REPORT_SEND_FILE_RESULT;
-		msg.arg1 = result;
-		mActivity.sendMessage(msg);
-	}
-	
-	/**
-	 * Pose the received-byte to ui
-	 * */
-	public void postRecvBytes(int sendBytes, int recvBytes) {
-		Message msg = new Message();
-		msg.what = WifiP2pConfigInfo.MSG_SEND_RECV_FILE_BYTES;
-		msg.arg1 = sendBytes;// send;
-		msg.arg2 = recvBytes;// recv;
-		mActivity.sendMessage(msg);
-	}
-	
-	/**
-	 * Post a veriry 
-	 */
-	public void postVerifyRecvFile() {
-		Message msg = new Message();
-		msg.what = WifiP2pConfigInfo.MSG_VERIFY_RECV_FILE_DIALOG;
-		mActivity.sendMessage(msg);
-	}
+//	/**
+//	 *  post send-file-result to ui 
+//	 */
+//	public void postSendFileResult(int result) {
+//		Message msg = new Message();
+//		msg.what = WifiP2pConfigInfo.MSG_REPORT_SEND_FILE_RESULT;
+//		msg.arg1 = result;
+//		mActivity.sendMessage(msg);
+//	}
+//	
+//	/**
+//	 * Pose the received-byte to ui
+//	 * */
+//	public void postRecvBytes(int sendBytes, int recvBytes) {
+//		Message msg = new Message();
+//		msg.what = WifiP2pConfigInfo.MSG_SEND_RECV_FILE_BYTES;
+//		msg.arg1 = sendBytes;// send;
+//		msg.arg2 = recvBytes;// recv;
+//		mActivity.sendMessage(msg);
+//	}
+//	
+//	/**
+//	 * Post a veriry 
+//	 */
+//	public void postVerifyRecvFile() {
+//		Message msg = new Message();
+//		msg.what = WifiP2pConfigInfo.MSG_VERIFY_RECV_FILE_DIALOG;
+//		mActivity.sendMessage(msg);
+//	}
 
 }
