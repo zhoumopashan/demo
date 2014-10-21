@@ -168,7 +168,8 @@ public class SendImageController {
 			resetSendFileInfo();
 			String host = "";
 			if (p2pService.isPeer()) {
-				host = p2pService.getHostAddress();
+//				host = p2pService.getHostAddress();
+				host = ma;
 			} else {
 				host = mSelectHost;
 			}

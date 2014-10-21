@@ -56,11 +56,10 @@ public class WifiP2pBroadcastReceiver extends BroadcastReceiver {
 			if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
 				// Wifi Direct mode is enabled
 				mP2pService.setIsWifiP2pEnabled(true);
-				mP2pService.discoverPeers();
+//				mP2pService.discoverPeers();
 			} else {
 				mP2pService.setIsWifiP2pEnabled(false);
 				mP2pService.resetPeers();
-
 			}
 			Logger.d(TAG, "P2P state changed - is wifip2p enable:" + (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) );
 		} 
@@ -88,10 +87,10 @@ public class WifiP2pBroadcastReceiver extends BroadcastReceiver {
 				// info to find group owner IP
 				mP2pService.requestConnectionInfo(mP2pServiceListener);
 			} else {
-				// It's a disconnect
-				mP2pService.resetPeers();
-				// TODO let's go and test ...
-				mP2pService.discoverPeers();
+//				// It's a disconnect
+//				mP2pService.resetPeers();
+//				// TODO let's go and test ...
+//				mP2pService.discoverPeers();
 			}
 			Logger.d(TAG, "P2P connection changed - networkInfo:" + networkInfo.toString());
 		} 

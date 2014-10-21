@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:clickable="true"
-        android:text="视频图片推送"
+        android:text="图片推送"
         android:textColor="@drawable/setting_word_btn"
         android:textSize="25dp"
         android:textStyle="bold" />

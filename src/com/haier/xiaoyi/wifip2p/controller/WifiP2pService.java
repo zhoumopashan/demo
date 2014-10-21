@@ -320,7 +320,9 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 
 			@Override
 			public void onSuccess() {
-				mActivity.onDisconnect();
+				if(mActivity != null){
+					mActivity.onDisconnect();
+				}
 			}
 		});
 	}
@@ -353,6 +355,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		Message msg = new Message();
 		msg.what = WifiP2pConfigInfo.MSG_REPORT_RECV_PEER_LIST;
 		msg.arg1 = count;
+		if( mActivity != null )
 		mActivity.sendMessage(msg);
 	}
 
@@ -360,6 +363,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		Message msg = new Message();
 		msg.what = WifiP2pConfigInfo.MSG_SEND_STRING;
 		msg.arg1 = sendBytes;// send;
+		if( mActivity != null )
 		mActivity.sendMessage(msg);
 	}
 
@@ -368,6 +372,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		Message msg = new Message();
 		msg.what = WifiP2pConfigInfo.MSG_REPORT_SEND_PEER_INFO_RESULT;
 		msg.arg1 = result;
+		if( mActivity != null )
 		mActivity.sendMessage(msg);
 	}
 	
@@ -375,6 +380,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	public void postRecvPeerInfo(PeerInfo info) {
 		Message msg = new Message();
 		msg.what = WifiP2pConfigInfo.MSG_RECV_PEER_INFO;
+		if( mActivity != null )
 		mActivity.sendMessage(msg);
 	}
 
@@ -382,6 +388,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		Message msg = new Message();
 		msg.what = WifiP2pConfigInfo.MSG_REPORT_RECV_FILE_RESULT;
 		msg.arg1 = result;
+		if( mActivity != null )
 		mActivity.sendMessage(msg);
 	}
 
@@ -389,6 +396,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		Message msg = new Message();
 		msg.what = WifiP2pConfigInfo.MSG_REPORT_SEND_STREAM_RESULT;
 		msg.arg1 = result;
+		if( mActivity != null )
 		mActivity.sendMessage(msg);
 	}
 
@@ -564,6 +572,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	public void onConnectionInfoAvailable(WifiP2pInfo info) {
 		Logger.d(TAG," onConnectionInfoAvailable ");
 		mWifiP2pInfo = info;
+		
 		if (info.groupFormed && info.isGroupOwner) {
 			Logger.d(TAG, "I'm the group's owner");
 			handleBroadcastPeerList();

@@ -1,19 +1,29 @@
 package com.haier.xiaoyi.ui;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.net.Uri;
+import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pDeviceList;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.widget.TextView;
 
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.wifip2p.controller.WifiP2pActivityListener;
+import com.haier.xiaoyi.wifip2p.controller.WifiP2pService;
+import com.haier.xiaoyi.wifip2p.controller.WifiP2pService.WifiP2pServiceBinder;
+import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
-public class ParentActivity extends Activity implements View.OnClickListener {
+public class ParentActivity extends Activity implements View.OnClickListener,WifiP2pActivityListener {
 
 	/******************************
 	 * Macros <br>
@@ -36,6 +46,32 @@ public class ParentActivity extends Activity implements View.OnClickListener {
 	/******************************
 	 * InnerClass <br>
 	 ******************************/
+	
+	/** WifiP2pService and the Binder */
+	private WifiP2pService mP2pService;
+
+	public WifiP2pService getP2pService() {
+		return mP2pService;
+	}
+
+	/**
+	 * ServiceConnection , Use bind interact with service
+	 */
+	private ServiceConnection mServiceConn = new ServiceConnection() {
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			Logger.d(TAG, "bind service success");
+
+			WifiP2pServiceBinder binder = (WifiP2pServiceBinder) service;
+			mP2pService = binder.getService();
+
+			// register the listener to service
+			mP2pService.registerAcitivity(ParentActivity.this);
+		}
+
+		public void onServiceDisconnected(ComponentName name) {
+			Logger.d("ServiceConnection", "unbind service success");
+		}
+	};
 
 	/** Message Hander */
 	private MainHandler mMainHandler;
@@ -76,6 +112,9 @@ public class ParentActivity extends Activity implements View.OnClickListener {
 	@Override
 	public void onResume() {
 		super.onResume();
+		
+		// add necessary intent values to be matched.
+		bindService(new Intent(this, WifiP2pService.class), mServiceConn, BIND_AUTO_CREATE);
 	}
 
 	@Override
@@ -92,6 +131,11 @@ public class ParentActivity extends Activity implements View.OnClickListener {
 
 	@Override
 	public void onPause() {
+		if (mServiceConn != null) {
+			unbindService(mServiceConn);
+			mServiceConn = null;
+		}
+		
 		super.onPause();
 	}
 
@@ -110,6 +154,7 @@ public class ParentActivity extends Activity implements View.OnClickListener {
 		switch (v.getId()) {
 		case R.id.push_image:
 			Logger.d(TAG, "push_image");
+			startSelectImage();
 			break;
 		case R.id.setting_bright:
 			Logger.d(TAG, "setting_bright");
@@ -122,6 +167,23 @@ public class ParentActivity extends Activity implements View.OnClickListener {
 			break;
 		default:
 			break;
+		}
+	}
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// User has picked an image. Transfer it to group owner i.e peer using
+		if (resultCode != RESULT_OK) {
+			return;
+		}
+
+		if (requestCode == WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE) {
+			if (data == null) {
+				Logger.e(this.getClass().getName(), "onActivityResult data == null, no choice.");
+				return;
+			}
+			Uri uri = data.getData();
+			mP2pService.getSendImageController().sendFile(uri , mP2pService);
 		}
 	}
 
@@ -156,7 +218,60 @@ public class ParentActivity extends Activity implements View.OnClickListener {
 
 		mPersonal = (TextView) findViewById(R.id.persional);
 		mPersonal.setOnClickListener(this);
+	}
+	
+	/** Show a image Select dialog, let user to select a image to send */
+	private void startSelectImage() {
+		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+		intent.setType("image/*");
+		startActivityForResult(intent, WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE);
+	}
 
+	@Override
+	public void onConnectionInfoAvailable(WifiP2pInfo info) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPeersAvailable(WifiP2pDeviceList peers) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void showDiscoverPeers() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onDisconnect() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void resetPeers() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void updateLocalDevice(WifiP2pDevice device) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void sendMessage(Message msg) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Activity getActivity() {
+		return this;
 	}
 
 }
