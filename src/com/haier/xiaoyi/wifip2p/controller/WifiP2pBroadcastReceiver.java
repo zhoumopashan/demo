@@ -56,7 +56,7 @@ public class WifiP2pBroadcastReceiver extends BroadcastReceiver {
 			if (state == WifiP2pManager.WIFI_P2P_STATE_ENABLED) {
 				// Wifi Direct mode is enabled
 				mP2pService.setIsWifiP2pEnabled(true);
-				mP2pService.discoverPeers();
+//				mP2pService.discoverPeers();
 			} else {
 				mP2pService.setIsWifiP2pEnabled(false);
 				mP2pService.resetPeers();

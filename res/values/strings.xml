@@ -1,7 +1,7 @@
 <resources>
 
     <!-- modules -->
-    <string name="app_name">Demo</string>
+    <string name="app_name">ECAN</string>
     <string name="str_care">家长关怀</string>
     <string name="str_wakeup">起床提醒</string>
     <string name="str_sleep">睡眠提醒</string>

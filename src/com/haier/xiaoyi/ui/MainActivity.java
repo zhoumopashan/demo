@@ -24,6 +24,7 @@ import android.widget.Toast;
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.wifip2p.controller.WifiP2pService;
 import com.haier.xiaoyi.wifip2p.module.WiFiPeerListAdapter;
 
 public class MainActivity extends Activity implements View.OnClickListener {
@@ -199,6 +200,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		initEnvironment();
 		initWindow();
 		initLayoutsAndViews();
+		
+		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 	}
 
 	@Override

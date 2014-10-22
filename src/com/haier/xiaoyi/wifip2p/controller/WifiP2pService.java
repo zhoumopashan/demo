@@ -25,10 +25,8 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.widget.Toast;
 
 import com.haier.xiaoyi.MainApplication;
-import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.DialogActivity;
 import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.wifip2p.module.PeerInfo;
@@ -80,6 +78,7 @@ public class WifiP2pService extends Service implements ChannelListener,
 
 	/** The p2p device's list */
 	private List<WifiP2pDevice> mP2pDeviceList = new ArrayList<WifiP2pDevice>();
+	private List<String> mConectTagList = new ArrayList<String>();
 
 	public List<WifiP2pDevice> getP2pDeviceList() {
 		return mP2pDeviceList;
@@ -152,6 +151,9 @@ public class WifiP2pService extends Service implements ChannelListener,
 		if(action.equals("send_photo")){
 			sendPhoto();
 		}
+		else if(action.equals("discover_peers")){
+			discoverPeers();
+		}
 		
 		return START_STICKY;
 	}
@@ -175,15 +177,15 @@ public class WifiP2pService extends Service implements ChannelListener,
 	public void onChannelDisconnected() {
 		// we will try once more
 		if (isWifiP2pAviliable() && mRetryChannelTime-- != 0) {
-			Toast.makeText(this, "Channel lost. Trying again",
-					Toast.LENGTH_LONG).show();
+//			Toast.makeText(this, "Channel lost. Trying again",
+//					Toast.LENGTH_LONG).show();
 			resetPeers();
 			mChannel = initialize(this, getMainLooper(), this);
 		} else {
-			Toast.makeText(
-					this,
-					"Severe! Channel is probably lost premanently. Try Disable/Re-Enable P2P.",
-					Toast.LENGTH_LONG).show();
+//			Toast.makeText(
+//					this,
+//					"Severe! Channel is probably lost premanently. Try Disable/Re-Enable P2P.",
+//					Toast.LENGTH_LONG).show();
 		}
 	}
 
@@ -193,19 +195,19 @@ public class WifiP2pService extends Service implements ChannelListener,
 
 	public boolean discoverPeers() {
 		if (!isWifiP2pEnabled) {
-			Toast.makeText(this, R.string.wifip2p_p2p_not_open, Toast.LENGTH_SHORT).show();
+//			Toast.makeText(this, R.string.wifip2p_p2p_not_open, Toast.LENGTH_SHORT).show();
 			return false;
 		} else {
 			// do discoverPeers
 			mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 				@Override
 				public void onSuccess() {
-					Toast.makeText(WifiP2pService.this, R.string.wifip2p_discovery_sucess, Toast.LENGTH_SHORT).show();
+//					Toast.makeText(WifiP2pService.this, R.string.wifip2p_discovery_sucess, Toast.LENGTH_SHORT).show();
 				}
 
 				@Override
 				public void onFailure(int reasonCode) {
-					Toast.makeText(WifiP2pService.this, String.format(getResources().getString(R.string.wifip2p_discovery_failed), reasonCode), Toast.LENGTH_SHORT).show();
+//					Toast.makeText(WifiP2pService.this, String.format(getResources().getString(R.string.wifip2p_discovery_failed), reasonCode), Toast.LENGTH_SHORT).show();
 				}
 			});
 			
@@ -311,9 +313,9 @@ public class WifiP2pService extends Service implements ChannelListener,
 
 			@Override
 			public void onFailure(int reason) {
-				Toast.makeText(WifiP2pService.this,
-						R.string.wifip2p_connecting_failed, Toast.LENGTH_SHORT)
-						.show();
+//				Toast.makeText(WifiP2pService.this,
+//						R.string.wifip2p_connecting_failed, Toast.LENGTH_SHORT)
+//						.show();
 			}
 		});
 	}
@@ -323,20 +325,20 @@ public class WifiP2pService extends Service implements ChannelListener,
 		mWifiP2pManager.cancelConnect(mChannel, new ActionListener() {
 			@Override
 			public void onSuccess() {
-				Toast.makeText(WifiP2pService.this,
-						R.string.wifip2p_connecting_canceled,
-						Toast.LENGTH_SHORT).show();
+//				Toast.makeText(WifiP2pService.this,
+//						R.string.wifip2p_connecting_canceled,
+//						Toast.LENGTH_SHORT).show();
 			}
 
 			@Override
 			public void onFailure(int reasonCode) {
-				Toast.makeText(
-						WifiP2pService.this,
-						String.format(
-								getResources()
-										.getString(
-												R.string.wifip2p_connecting_cancel_failed),
-								reasonCode), Toast.LENGTH_SHORT).show();
+//				Toast.makeText(
+//						WifiP2pService.this,
+//						String.format(
+//								getResources()
+//										.getString(
+//												R.string.wifip2p_connecting_cancel_failed),
+//								reasonCode), Toast.LENGTH_SHORT).show();
 			}
 		});
 	}
@@ -576,72 +578,30 @@ public class WifiP2pService extends Service implements ChannelListener,
 			return;
 		}
 
-		if (peers.getDeviceList().size() == 1) {
-			WifiP2pDevice device = new ArrayList<WifiP2pDevice>(
-					peers.getDeviceList()).get(0);
-			if (device == null)
-				return;
-
-			WifiP2pDevice localDevice = ((MainApplication) getApplication())
-					.getXiaoyi().getDevice();
-			boolean isConnect = ((MainApplication) getApplication())
-					.getXiaoyi().isConnect();
-			if (isConnect == true && localDevice != null
-					&& localDevice.deviceAddress.equals(device.deviceAddress)) {
+		String deviceTag;
+		boolean isContain = false;
+		// connect the devices
+		for (WifiP2pDevice deviceItem : mP2pDeviceList) {
+			
+			// check if the device has connect already
+			deviceTag = deviceItem.deviceAddress + deviceItem.deviceName;
+			for (String tagItem : mConectTagList) {
+				if (tagItem.equals(deviceTag)) {
+					isContain = true;
+				}
+			}
+			
+			// process the device
+			if (isContain == true && deviceItem.status != WifiP2pDevice.AVAILABLE) {
 				return;
 			}
 
-			((MainApplication) getApplication()).getXiaoyi().setDevice(device);
+			// connecting the device
 			WifiP2pConfig config = new WifiP2pConfig();
-			config.deviceAddress = device.deviceAddress;
+			config.deviceAddress = deviceItem.deviceAddress;
 			config.wps.setup = WpsInfo.PBC;
-			
-			showProgressDialog("connect");
-
-			// connecting
 			connect(config);
-			return;
 		}
-		//
-		// mSearchArea.setVisibility(View.VISIBLE);
-		// mDiscoveryPeersListView.setEnabled(false);
-		// mDiscoveryPeersListView.setVisibility(View.GONE);
-		// mDiscoveryPeersAdapter.setDeviceList(peers.getDeviceList());
-		// mDiscoveryPeersListView.setEnabled(true);
-		// mDiscoveryPeersListView.setVisibility(View.VISIBLE);
-		// mDiscoveryPeersListView.setAdapter(mDiscoveryPeersAdapter);
-		//
-		// mP2pService.getSendImageController().setSelectHost(null);
-		//
-		// // Show select dialog
-		// AlertDialog.Builder selectDialog = new AlertDialog.Builder(this);
-		// selectDialog.setTitle(R.string.wifip2p_select_peer_dialog_title);
-		// selectDialog.setIcon(android.R.drawable.ic_dialog_info);
-		//
-		// // Mark all host of the peerList
-		// final ArrayList<String> items = new ArrayList<String>();
-		// Iterator<PeerInfo> it = mP2pService.getPeerInfoList().iterator();
-		// while (it.hasNext()){
-		// items.add(it.next().host);
-		// }
-		// String[] strHosts = new String[items.size()];// size > 0;
-		// items.toArray(strHosts);
-		// selectDialog.setSingleChoiceItems(strHosts, 0, new
-		// DialogInterface.OnClickListener() {
-		// public void onClick(DialogInterface dialog, int which) {
-		// if (which < items.size() - 1) {
-		// mP2pService.getSendImageController().setSelectHost(items.get(which));
-		// Logger.d(TAG, "selectHost:" +
-		// mP2pService.getSendImageController().getSelectHost());
-		// dialog.dismiss();
-		//
-		// // Show image select dialog
-		// startSelectImage();
-		// }
-		// }
-		// });
-		// selectDialog.setNegativeButton("CANCEL", null);
-		// selectDialog.show();
 	}
 
 	@Override
