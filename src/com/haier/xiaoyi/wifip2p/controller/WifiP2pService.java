@@ -6,6 +6,7 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -78,7 +79,6 @@ public class WifiP2pService extends Service implements ChannelListener,
 
 	/** The p2p device's list */
 	private List<WifiP2pDevice> mP2pDeviceList = new ArrayList<WifiP2pDevice>();
-	private List<String> mConectTagList = new ArrayList<String>();
 
 	public List<WifiP2pDevice> getP2pDeviceList() {
 		return mP2pDeviceList;
@@ -151,7 +151,9 @@ public class WifiP2pService extends Service implements ChannelListener,
 		if(action.equals("send_photo")){
 			sendPhoto();
 		}
-		else if(action.equals("discover_peers")){
+		else if (action.equals("discover_peers")) {
+			// show dialog
+			showProgressDialog("discover_peers");
 			discoverPeers();
 		}
 		
@@ -165,11 +167,21 @@ public class WifiP2pService extends Service implements ChannelListener,
 		initEnvironment();
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public void onDestroy() {
 		Logger.d(TAG, "P2p Service onDestroy~~~");
 		unregisterReceiver(mWifiP2pReceiver);
+		cancelDisconnect();
+		removeGroup();
 		mThreadPoolManager.destory();
+		if(mWifiP2pManager != null){
+			try {
+				mWifiP2pManager.stopPeerDiscovery(mChannel, null);
+			} catch (Exception ex) {
+
+			}
+		}
 		super.onDestroy();
 	}
 
@@ -202,6 +214,7 @@ public class WifiP2pService extends Service implements ChannelListener,
 			mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 				@Override
 				public void onSuccess() {
+//					dismissProgressDialog();
 //					Toast.makeText(WifiP2pService.this, R.string.wifip2p_discovery_sucess, Toast.LENGTH_SHORT).show();
 				}
 
@@ -210,9 +223,6 @@ public class WifiP2pService extends Service implements ChannelListener,
 //					Toast.makeText(WifiP2pService.this, String.format(getResources().getString(R.string.wifip2p_discovery_failed), reasonCode), Toast.LENGTH_SHORT).show();
 				}
 			});
-			
-			// show dialog
-			showProgressDialog("discover_peers");
 			
 			return true;
 		}
@@ -226,6 +236,7 @@ public class WifiP2pService extends Service implements ChannelListener,
 	}
 	
 	private void dismissProgressDialog(){
+		Logger.d(TAG,"in service send dismissProgressDialog");
 		Intent intent = new Intent(this,DialogActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.setAction("dismiss");
@@ -322,6 +333,10 @@ public class WifiP2pService extends Service implements ChannelListener,
 
 	/**  */
 	public void cancelDisconnect() {
+		// null check 
+		if(mWifiP2pManager == null)return;
+		
+		// disconnect
 		mWifiP2pManager.cancelConnect(mChannel, new ActionListener() {
 			@Override
 			public void onSuccess() {
@@ -358,6 +373,10 @@ public class WifiP2pService extends Service implements ChannelListener,
 	}
 
 	public void removeGroup() {
+		// null check
+		if(mWifiP2pManager == null) return;
+		
+		// remove group
 		mWifiP2pManager.removeGroup(mChannel, new ActionListener() {
 			@Override
 			public void onFailure(int reasonCode) {
@@ -486,6 +505,39 @@ public class WifiP2pService extends Service implements ChannelListener,
 			return false;
 		}
 	}
+	
+	/**
+	 * Handle when receive a peerInfo
+	 */
+	public boolean handleRecvDeviceInfo(InputStream ins) {
+		try {
+			String strBuffer = "";
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = ins.read(buffer)) != -1) {
+				strBuffer = strBuffer + new String(buffer, 0, len);
+			}
+
+			int offset1 = strBuffer.indexOf("light:");
+			int offset2 = strBuffer.indexOf("sound:");
+			Logger.d(TAG, "recvPeerSockAddr strBuffer:" + strBuffer);
+
+			if (offset1 != -1 && offset2 != -1) {
+//				String host = strBuffer.substring(offset1 + 5, offset2);
+				int light = Integer.parseInt( strBuffer.substring(offset1 + 6, offset2) );
+				int voice = Integer.parseInt(strBuffer.substring(offset2 + 6,
+						strBuffer.length()));
+				
+//				PeerInfo info = new PeerInfo(host, port);
+				mApplication.getXiaoyi().setBright(light);
+				mApplication.getXiaoyi().setVolice(voice);
+			}
+			return true;
+		} catch (IOException e) {
+			Logger.e(TAG, e.getMessage());
+			return false;
+		}
+	}
 
 	public void handleSendPeerInfo() {
 		mThreadPoolManager.execute(WrapRunable.getSendPeerInfoRunable(
@@ -572,36 +624,37 @@ public class WifiP2pService extends Service implements ChannelListener,
 		Logger.d(TAG, "onPeersAvailable");
 		mP2pDeviceList.clear();
 		mP2pDeviceList.addAll(peers.getDeviceList());
+//		dismissProgressDialog();
 
-		if (mP2pDeviceList.size() == 0) {
-			Logger.e(TAG, "No devices found");
-			return;
-		}
-
-		String deviceTag;
-		boolean isContain = false;
-		// connect the devices
-		for (WifiP2pDevice deviceItem : mP2pDeviceList) {
-			
-			// check if the device has connect already
-			deviceTag = deviceItem.deviceAddress + deviceItem.deviceName;
-			for (String tagItem : mConectTagList) {
-				if (tagItem.equals(deviceTag)) {
-					isContain = true;
-				}
-			}
-			
-			// process the device
-			if (isContain == true && deviceItem.status != WifiP2pDevice.AVAILABLE) {
-				return;
-			}
-
-			// connecting the device
-			WifiP2pConfig config = new WifiP2pConfig();
-			config.deviceAddress = deviceItem.deviceAddress;
-			config.wps.setup = WpsInfo.PBC;
-			connect(config);
-		}
+//		if (mP2pDeviceList.size() == 0) {
+//			Logger.e(TAG, "No devices found");
+//			return;
+//		}
+//
+//		String deviceTag;
+//		boolean isContain = false;
+//		// connect the devices
+//		for (WifiP2pDevice deviceItem : mP2pDeviceList) {
+//			
+//			// check if the device has connect already
+//			deviceTag = deviceItem.deviceAddress + deviceItem.deviceName;
+//			for (String tagItem : mConectTagList) {
+//				if (tagItem.equals(deviceTag)) {
+//					isContain = true;
+//				}
+//			}
+//			
+//			// process the device
+//			if (isContain == true && deviceItem.status != WifiP2pDevice.AVAILABLE) {
+//				return;
+//			}
+//
+//			// connecting the device
+//			WifiP2pConfig config = new WifiP2pConfig();
+//			config.deviceAddress = deviceItem.deviceAddress;
+//			config.wps.setup = WpsInfo.PBC;
+//			connect(config);
+//		}
 	}
 
 	@Override

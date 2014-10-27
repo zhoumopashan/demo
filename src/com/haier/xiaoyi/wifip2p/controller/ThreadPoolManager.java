@@ -220,6 +220,9 @@ class HandleAcceptSocket implements Runnable {
 			else if (iCommand == WifiP2pConfigInfo.COMMAND_ID_SEND_STRING) {
 				// TODO ...
 			}
+			else if(iCommand == WifiP2pConfigInfo.COMMAND_ID_SEND_DEVICE_INFO){
+				mService.handleRecvDeviceInfo(ins);
+			}
 			
 			ins.close();
 		} catch (IOException e) {

@@ -3,16 +3,20 @@
     <!-- modules -->
     <string name="app_name">ECAN</string>
     <string name="str_care">家长关怀</string>
+    <string name="smart_home">智能家庭</string>
+    <string name="smart_home_1">视频对话</string>
     <string name="str_wakeup">起床提醒</string>
     <string name="str_sleep">睡眠提醒</string>
     <string name="str_eat">吃饭提醒</string>
     <string name="personal">自定义</string>
-    
+    <string name="light">亮度调节</string>
+    <string name="sound">音量调节</string>
+
     <!-- Wifi p2p layouts -->
     <string name="wifi_search_main_retry">重新搜索</string>
     <string name="wifi_search_main_join">连接设备</string>
     <string name="wifi_search_main_title">选择您要连接的设备：</string>
-    
+
     <!-- Wifi p2p 提示 -->
     <string name="wifip2p_p2p_not_open">您手机的wifi直联模式没有打开，请打开手机wifi，并取消当前正在连接的Wifi网络（Wifi路由器）</string>
     <string name="wifip2p_p2p_scanning_title">注意</string>
@@ -34,5 +38,8 @@
     <string name="wifip2p_connecting_canceled">连接已取消</string>
     <string name="wifip2p_connecting_cancel_failed">连接取消失败，错误码 :%1$d</string>
     <string name="wifip2p_connecting_failed">连接失败</string>
+
+    <!-- tips -->
+    <string name="dialog_exit_app">您真的要退出程序吗？</string>
 
 </resources>

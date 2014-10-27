@@ -1,6 +1,7 @@
 package com.haier.xiaoyi.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -203,6 +205,32 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		
 		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case KeyEvent.KEYCODE_BACK:
+			Logger.d(TAG,"back key");
+		    AlertDialog.Builder builder = new AlertDialog.Builder(this);  
+		    builder.setMessage(R.string.dialog_exit_app)  
+		           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {  
+		               public void onClick(DialogInterface dialog, int id) {  
+		                    getApplication().onTerminate();
+		               }  
+		           })  
+		           .setNegativeButton("No", new DialogInterface.OnClickListener() {  
+		               public void onClick(DialogInterface dialog, int id) {  
+		            	    Logger.d(TAG,"cancel");
+		                    dialog.cancel();  
+		               }  
+		           }).create().show();  
+			return false;
+
+		default:
+			break;
+		}
+		return super.onKeyDown(keyCode, event);
+	}
 
 	@Override
 	public void onResume() {
@@ -249,6 +277,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		switch (v.getId()) {
 		case R.id.btn1:
 			Logger.d(TAG, "btn1 click");
+			startActivity(new Intent(MainActivity.this, SmartHomeActivity.class));
 			break;
 		case R.id.btn2:
 			Logger.d(TAG, "btn2 click");
@@ -263,6 +292,19 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			break;
 		case R.id.main_func_middle_btn:
 			Logger.d(TAG, "main_func_middle_btn click");
+		    AlertDialog.Builder builder = new AlertDialog.Builder(this);  
+		    builder.setMessage(R.string.dialog_exit_app)  
+		           .setPositiveButton("Yes", new DialogInterface.OnClickListener() {  
+		               public void onClick(DialogInterface dialog, int id) {  
+		                    getApplication().onTerminate();
+		               }  
+		           })  
+		           .setNegativeButton("No", new DialogInterface.OnClickListener() {  
+		               public void onClick(DialogInterface dialog, int id) {  
+		            	    Logger.d(TAG,"cancel");
+		                    dialog.cancel();  
+		               }  
+		           }).create().show();  
 			break;
 		default:
 			break;
@@ -399,14 +441,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	 ******************************/
 
 	private void initEnvironment() {
-		
+		((MainApplication)getApplication()).addActivity(this);
 	}
 
 	/**
 	 * Release the environment that init before
 	 */
 	private void releaseEnvironment() {
-		
+		((MainApplication)getApplication()).removeActivity(this);
 	}
 
 	private void initWindow() {

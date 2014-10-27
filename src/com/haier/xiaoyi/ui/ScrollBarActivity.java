@@ -17,20 +17,27 @@ import android.os.Message;
 import android.util.Pair;
 import android.view.View;
 import android.view.Window;
+import android.widget.ImageView;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
+import com.haier.xiaoyi.ui.ParentActivity.MySendFileRunable;
 import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.wifip2p.module.Utility;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
-public class ParentActivity extends Activity implements View.OnClickListener{
+public class ScrollBarActivity extends Activity implements View.OnClickListener {
 
 	/******************************
 	 * Macros <br>
 	 ******************************/
 	private static final String TAG = "ParentActivity";
+	private static final int BRIGHT = 0;
+	private static final int VOICE = 1;
+	private int mScrollType = BRIGHT;
 
 	/******************************
 	 * public Members <br>
@@ -40,15 +47,15 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 	 * private Members <br>
 	 ******************************/
 	/** Layouts & Views */
-	private View mPushImage;
-	private View mBrightSet;
-	private View mVolumnSet;
-	private View mPersonal;
+	private TextView mTitle;
+	private SeekBar mSeekBar;
+	private ImageView mLeftView;
+	private ImageView mRightView;
 
 	/******************************
 	 * InnerClass <br>
 	 ******************************/
-	
+
 	/** Message Hander */
 	private MainHandler mMainHandler;
 
@@ -88,7 +95,7 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 	@Override
 	public void onResume() {
 		super.onResume();
-		
+
 	}
 
 	@Override
@@ -110,7 +117,7 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 
 	@Override
 	protected void onDestroy() {
-		((MainApplication)getApplication()).removeActivity(this);
+		((MainApplication) getApplication()).removeActivity(this);
 		super.onDestroy();
 	}
 
@@ -128,11 +135,9 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 			break;
 		case R.id.setting_bright:
 			Logger.d(TAG, "setting_bright");
-			startActivity(new Intent(ParentActivity.this,ScrollBarActivity.class).setAction("light"));
 			break;
 		case R.id.setting_volumn:
 			Logger.d(TAG, "setting_volumn");
-			startActivity(new Intent(ParentActivity.this,ScrollBarActivity.class).setAction("sound"));
 			break;
 		case R.id.persional:
 			Logger.d(TAG, "persional");
@@ -141,7 +146,7 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 			break;
 		}
 	}
-	
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// User has picked an image. Transfer it to group owner i.e peer using
@@ -149,21 +154,8 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 			return;
 		}
 
-		if (requestCode == WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE) {
-			if (data == null) {
-				Logger.e(TAG, "onActivityResult data == null, no choice.");
-				return;
-			}
-			Uri uri = data.getData();
-//			mP2pService.getSendImageController().sendFile(uri , mP2pService);
-//			((MainApplication)getApplication()).getXiaoyi().setPhotoUri(uri);
-//			startService(new Intent(this,WifiP2pService.class).setAction("send_photo"));
-			String host= ((MainApplication)getApplication()).getXiaoyi().getHostIp();
-			int port = WifiP2pConfigInfo.LISTEN_PORT;
-			new Thread(new MySendFileRunable(host,port,uri,getFileInfo(uri),getInputStream(uri))).start();
-		}
 	}
-	
+
 	/******************************
 	 * public Methods <br>
 	 ******************************/
@@ -175,51 +167,91 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 	private void initEnvironment() {
 		// Init Main Handler
 		mMainHandler = new MainHandler();
-		((MainApplication)getApplication()).addActivity(this);
+		((MainApplication) getApplication()).addActivity(this);
 	}
 
 	private void initWindow() {
 		// Define Custom Window Title
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.parent_layout);
+		setContentView(R.layout.scrollbar_layout);
 	}
 
 	private void initLayoutsAndViews() {
-		mPushImage = (TextView) findViewById(R.id.push_image);
-		mPushImage.setOnClickListener(this);
-
-		mBrightSet = (TextView) findViewById(R.id.setting_bright);
-		mBrightSet.setOnClickListener(this);
-
-		mVolumnSet = (TextView) findViewById(R.id.setting_volumn);
-		mVolumnSet.setOnClickListener(this);
-
-		mPersonal = (TextView) findViewById(R.id.persional);
-		mPersonal.setOnClickListener(this);
+		mTitle = (TextView) findViewById(R.id.scrollbar_layout_title);
+		mLeftView = (ImageView) findViewById(R.id.scrollbar_layout_light_left);
+		mRightView = (ImageView) findViewById(R.id.scrollbar_layout_light_right);
+		mSeekBar = (SeekBar) findViewById(R.id.scrollbar_layout_seekbar);
+		
+		Intent intent = getIntent();
+		if(intent == null || intent.getAction() == null){
+			return;
+		}
+		
+		if(intent.getAction().equals("light")){
+			mTitle.setText(getString(R.string.light));
+			mLeftView.setBackgroundResource(R.drawable.light_left);
+			mRightView.setBackgroundResource(R.drawable.light_right);
+			mSeekBar.setProgress(((MainApplication)getApplication()).getXiaoyi().getBright());
+			mScrollType = BRIGHT;
+		}
+		else if(intent.getAction().equals("sound")){
+			mTitle.setText(getString(R.string.sound));
+			mScrollType = VOICE;
+		}
+		
+		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+//				Logger.d(TAG, "onStopTrackingTouch");
+				String ip = ((MainApplication)getApplication()).getXiaoyi().getHostIp();
+				int bright = ((MainApplication)getApplication()).getXiaoyi().getBright();
+				int voice = ((MainApplication)getApplication()).getXiaoyi().getVolice();
+				new Thread(new SendDeviceInfoRunnable(ip,bright,voice)).start();
+			}
+			
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+//				Logger.d(TAG, "onStartTrackingTouch");				
+			}
+			
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				switch (mScrollType) {
+				case BRIGHT:
+					((MainApplication)getApplication()).getXiaoyi().setBright(progress);
+					break;
+				case VOICE:
+					((MainApplication)getApplication()).getXiaoyi().setVolice(progress);
+					break;
+				default:
+					break;
+				}
+			}
+		});
 	}
-	
+
 	/** Show a image Select dialog, let user to select a image to send */
 	private void startSelectImage() {
 		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 		intent.setType("image/*");
 		startActivityForResult(intent, WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE);
 	}
-	
+
 	/** Get the file's info */
-	public String getFileInfo(Uri uri){
+	public String getFileInfo(Uri uri) {
 		// get the name & fileSize of the uri-file
 		Pair<String, Integer> pair;
 		try {
-			pair = Utility.getFileNameAndSize(ParentActivity.this, uri);
+			pair = Utility.getFileNameAndSize(ScrollBarActivity.this, uri);
 		} catch (IOException e) {
 			return null;
 		}
 		String name = pair.first;
 		long size = pair.second;
-		
+
 		return "size:" + size + "name:" + name;
 	}
-	
+
 	/**
 	 * Get the file's inputStream by uri
 	 */
@@ -236,76 +268,46 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 	 * A send file task, send the file(uri) to the device mark by host & port
 	 * @author luochenxun
 	 */
-	class MySendFileRunable implements Runnable {
+	class SendDeviceInfoRunnable implements Runnable {
 		
-		private String host;
-		private int port;
-		private Uri uri;
-		private String fileInfo;
-		private InputStream ins;
+		private String mIp;
+		private int mBright;
+		private int mVoice;
 		
-		MySendFileRunable(String host, int port, Uri uri , String info ,InputStream in) {
-			this.host = host;
-			this.port = port;
-			this.uri = uri;
-			this.fileInfo = info;
-			ins = in;
+		SendDeviceInfoRunnable(String ip , int bright , int voice){
+			mIp = ip;
+			mBright = bright;
+			mVoice = voice;
 		}
 		
 		@Override
 		public void run() {
-			sendFile();
-		}
-		
-		private boolean sendFile() {
-			Boolean result = Boolean.TRUE;
+			/* Construct socket */
 			Socket socket = new Socket();
+			
 			try {
-				// connect the dst server
 				socket.bind(null);
-				socket.connect((new InetSocketAddress(host, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);
-				Logger.d(this.getClass().getName(), "Client socket - " + socket.isConnected());
-				
-				// Get the file's info
-				OutputStream outs = socket.getOutputStream();
-				
-				// output the commandId
-				outs.write(WifiP2pConfigInfo.COMMAND_ID_SEND_FILE);
-				
-				// output the file's info
-				if(fileInfo == null){
-					return false;
-				}
-				Logger.d(this.getClass().getName(), "fileInfo:" + fileInfo);
-				outs.write(fileInfo.length());
-				outs.write(fileInfo.getBytes(), 0, fileInfo.length());
-				
-				// output the file's stream
-				if(ins == null){
-					return false;
-				}
-				byte buf[] = new byte[1024];
-				int len;
-				while ((len = ins.read(buf)) != -1) {
-					outs.write(buf, 0, len);
-				}
+				socket.connect((new InetSocketAddress(mIp, 
+						WifiP2pConfigInfo.LISTEN_PORT)), 
+						WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
-				// close socket
-				ins.close();
-				outs.close();
-				Logger.d(this.getClass().getName(), "Client: Data written");
-			} catch (FileNotFoundException e) {
-				Logger.d(this.getClass().getName(), "send file exception " + e.toString());
+				Logger.d(TAG, "Client socket - " + socket.isConnected());
+				OutputStream stream = socket.getOutputStream();
+				// send cmd
+				stream.write(WifiP2pConfigInfo.COMMAND_ID_SENDBACK_DEVICE_INFO);
+				// send data
+				String strSend = "light:" + mBright + "sound:" + mVoice;
+				stream.write(strSend.getBytes(), 0, strSend.length());
+				
+				Logger.d(TAG, "Client: Data written strSend:" + strSend);
 			} catch (IOException e) {
-				Logger.e(this.getClass().getName(),
-						"send file exception " + e.getMessage());
-				result = Boolean.FALSE;
+				Logger.e(TAG, e.getMessage());
 			} finally {
 				if (socket != null) {
 					if (socket.isConnected()) {
 						try {
 							socket.close();
-							Logger.d(this.getClass().getName(), "socket.close()");
+							Logger.d(TAG, "socket.close();");
 						} catch (IOException e) {
 							// Give up
 							e.printStackTrace();
@@ -313,8 +315,8 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 					}
 				}
 			}
-			return result;
 		}
+		
 	}
 
 }

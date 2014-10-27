@@ -1,20 +1,20 @@
 package com.haier.xiaoyi.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.widget.TextView;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.videochat.VideoChat;
 
-public class CareActivity extends Activity implements View.OnClickListener {
+public class SmartHomeActivity extends Activity implements View.OnClickListener {
 
 	/******************************
 	 * Macros <br>
@@ -30,9 +30,9 @@ public class CareActivity extends Activity implements View.OnClickListener {
 	 ******************************/
 	/** Layouts & Views */
 	private View mBtn1;
-	private View mBtn2;
-	private View mBtn3;
-	private View mBtn4;
+//	private View mBtn2;
+//	private View mBtn3;
+//	private View mBtn4;
 
 	/******************************
 	 * InnerClass <br>
@@ -110,18 +110,19 @@ public class CareActivity extends Activity implements View.OnClickListener {
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.care1_btn:
+		case R.id.smart_home_btn_1:
 			Logger.d(TAG, "care1_btn");
+			startActivity(new Intent(SmartHomeActivity.this,VideoChat.class));
 			break;
-		case R.id.care2_btn:
-			Logger.d(TAG, "care2_btn");
-			break;
-		case R.id.care3_btn:
-			Logger.d(TAG, "care3_btn");
-			break;
-		case R.id.care4_btn:
-			Logger.d(TAG, "care4_btn");
-			break;
+//		case R.id.care2_btn:
+//			Logger.d(TAG, "care2_btn");
+//			break;
+//		case R.id.care3_btn:
+//			Logger.d(TAG, "care3_btn");
+//			break;
+//		case R.id.care4_btn:
+//			Logger.d(TAG, "care4_btn");
+//			break;
 		default:
 			break;
 		}
@@ -144,21 +145,21 @@ public class CareActivity extends Activity implements View.OnClickListener {
 	private void initWindow() {
 		// Define Custom Window Title
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.care_layout);
+		setContentView(R.layout.smart_home_layout);
 	}
 
 	private void initLayoutsAndViews() {
-		mBtn1 = (TextView) findViewById(R.id.care1_btn);
+		mBtn1 = (TextView) findViewById(R.id.smart_home_btn_1);
 		mBtn1.setOnClickListener(this);
-
-		mBtn2 = (TextView) findViewById(R.id.care2_btn);
-		mBtn2.setOnClickListener(this);
-
-		mBtn3 = (TextView) findViewById(R.id.care3_btn);
-		mBtn3.setOnClickListener(this);
-
-		mBtn4 = (TextView) findViewById(R.id.care4_btn);
-		mBtn4.setOnClickListener(this);
+//
+//		mBtn2 = (TextView) findViewById(R.id.care2_btn);
+//		mBtn2.setOnClickListener(this);
+//
+//		mBtn3 = (TextView) findViewById(R.id.care3_btn);
+//		mBtn3.setOnClickListener(this);
+//
+//		mBtn4 = (TextView) findViewById(R.id.care4_btn);
+//		mBtn4.setOnClickListener(this);
 
 	}
 

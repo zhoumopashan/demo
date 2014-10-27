@@ -30,6 +30,10 @@ public class WifiP2pConfigInfo {
 	public static final int COMMAND_ID_BROADCAST_PEER_LIST = 104;
 	public static final int COMMAND_ID_SEND_STRING = 105;
 	
+	/**  */
+	public static final int COMMAND_ID_SEND_DEVICE_INFO = 200;
+	public static final int COMMAND_ID_SENDBACK_DEVICE_INFO = 201;
+	
 	/** About server Socket */
 	/** ServerSocket's Port */
 	public static final int LISTEN_PORT = 8988;
