@@ -274,6 +274,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	@Override
 	public void onClick(View v) {
+		
+		if(!connectCheck() && v.getId() != R.id.main_func_middle_btn){
+			return;
+		}
+		
 		switch (v.getId()) {
 		case R.id.btn1:
 			Logger.d(TAG, "btn1 click");
@@ -721,6 +726,16 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		Toast toast = Toast.makeText(this, tipsID, Toast.LENGTH_LONG);
 		toast.setGravity(Gravity.CENTER, 0, 0);
 		toast.show();
+	}
+	
+	private boolean connectCheck(){
+		WifiP2pDevice device = ((MainApplication)getApplication()).getLocalDevice();
+		if(device.status != WifiP2pDevice.CONNECTED){
+			Toast.makeText(this, R.string.wifip2p_wait, Toast.LENGTH_SHORT).show();
+			startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
+			return false;
+		}
+		return true;
 	}
 
 //	@Override

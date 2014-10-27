@@ -13,7 +13,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
-import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -26,6 +25,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.text.TextUtils;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.util.DialogActivity;
@@ -610,12 +610,47 @@ public class WifiP2pService extends Service implements ChannelListener,
 
 	@Override
 	public void updateLocalDevice(WifiP2pDevice device) {
+		Logger.d(TAG,"updateLocalDevice , device.status is :" + device.status);
 		mLocalDevice = device;
-//		if (mActivity != null) {
-//			mActivity.updateLocalDevice(device);
-//		}
-	}
+		((MainApplication) getApplication()).setLocalDevice(device);
 
+		if (device.status == WifiP2pDevice.INVITED) {
+			showProgressDialog("connect");
+		} else if (device.status != WifiP2pDevice.CONNECTED) {
+			discoverPeers();
+			showProgressDialog("discover_peers");
+		} else {
+			
+			if(TextUtils.isEmpty(mApplication.getXiaoyi().getHostIp())){
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						int retryTime = 3;
+						while(	--retryTime > 0){
+							try {
+								Thread.sleep(3000);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							if(TextUtils.isEmpty(mApplication.getXiaoyi().getHostIp())){
+								return;
+							}
+						}
+						removeGroup();
+						discoverPeers();
+					}
+				}).start();
+			}else{
+				dismissProgressDialog();
+			}
+			
+		}
+		// if (mActivity != null) {
+		// mActivity.updateLocalDevice(device);
+		// }
+	}
+	
 	/**
 	 * Callback by discoveryPeers, return the peers that discovery
 	 */

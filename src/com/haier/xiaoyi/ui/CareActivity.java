@@ -1,12 +1,11 @@
 package com.haier.xiaoyi.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.widget.TextView;
 
@@ -112,12 +111,15 @@ public class CareActivity extends Activity implements View.OnClickListener {
 		switch (v.getId()) {
 		case R.id.care1_btn:
 			Logger.d(TAG, "care1_btn");
+			startActivity(new Intent(this,ClockActivity.class).setAction("get_up"));
 			break;
 		case R.id.care2_btn:
 			Logger.d(TAG, "care2_btn");
+			startActivity(new Intent(this,ClockActivity.class).setAction("sleep"));
 			break;
 		case R.id.care3_btn:
 			Logger.d(TAG, "care3_btn");
+			startActivity(new Intent(this,ClockActivity.class).setAction("eat"));
 			break;
 		case R.id.care4_btn:
 			Logger.d(TAG, "care4_btn");

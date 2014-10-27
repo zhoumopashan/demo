@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Calendar;
+import java.util.Date;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -16,11 +18,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Pair;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.Window;
-import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
@@ -28,15 +29,16 @@ import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.wifip2p.module.Utility;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
-public class ScrollBarActivity extends Activity implements View.OnClickListener {
+public class ClockActivity extends Activity implements View.OnClickListener {
 
 	/******************************
 	 * Macros <br>
 	 ******************************/
-	private static final String TAG = "ParentActivity";
-	private static final int BRIGHT = 0;
-	private static final int VOICE = 1;
-	private int mScrollType = BRIGHT;
+	private static final String TAG = "ClockActivity";
+	private static final int GET_UP = 0;
+	private static final int SLEEP = 1;
+	private static final int EAT = 2;
+	private int mClockType = GET_UP;
 
 	/******************************
 	 * public Members <br>
@@ -47,9 +49,8 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 	 ******************************/
 	/** Layouts & Views */
 	private TextView mTitle;
-	private SeekBar mSeekBar;
-	private ImageView mLeftView;
-	private ImageView mRightView;
+	private TimePicker mTimePicker;
+	private View mOk;
 
 	/******************************
 	 * InnerClass <br>
@@ -172,63 +173,61 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 	private void initWindow() {
 		// Define Custom Window Title
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.scrollbar_layout);
+		setContentView(R.layout.clock_layout);
 	}
 
 	private void initLayoutsAndViews() {
-		mTitle = (TextView) findViewById(R.id.scrollbar_layout_title);
-		mLeftView = (ImageView) findViewById(R.id.scrollbar_layout_light_left);
-		mRightView = (ImageView) findViewById(R.id.scrollbar_layout_light_right);
-		mSeekBar = (SeekBar) findViewById(R.id.scrollbar_layout_seekbar);
+		mTitle = (TextView) findViewById(R.id.clock_layout_title);
+		mTimePicker = (TimePicker) findViewById(R.id.clock_layout_datepicker);
+		mTimePicker.setIs24HourView(true);
+		mTimePicker.setEnabled(true);
+		mOk = findViewById(R.id.clock_layout_ok);
 
 		Intent intent = getIntent();
 		if (intent == null || intent.getAction() == null) {
 			return;
 		}
 
-		if (intent.getAction().equals("light")) {
-			mTitle.setText(getString(R.string.light));
-			mLeftView.setBackgroundResource(R.drawable.light_left);
-			mRightView.setBackgroundResource(R.drawable.light_right);
-			mSeekBar.setProgress(((MainApplication) getApplication()).getXiaoyi().getBright());
-			mScrollType = BRIGHT;
-		} else if (intent.getAction().equals("sound")) {
-			mTitle.setText(getString(R.string.sound));
-			mLeftView.setBackgroundResource(R.drawable.sound_left);
-			mRightView.setBackgroundResource(R.drawable.sound_right);
-			mSeekBar.setProgress(((MainApplication) getApplication()).getXiaoyi().getVolice());
-			mScrollType = VOICE;
+		if (intent.getAction().equals("get_up")) {
+			mClockType = GET_UP;
+			mTitle.setText(R.string.clock_getup);
+		} else if (intent.getAction().equals("sleep")) {
+			mClockType = SLEEP;
+			mTitle.setText(R.string.clock_sleep);
+		} else if (intent.getAction().equals("eat")) {
+			mClockType = EAT;
+			mTitle.setText(R.string.clock_eat);
 		}
 
-		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+		mOk.setOnClickListener(new OnClickListener() {
+
 			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
+			public void onClick(View v) {
+				int h = mTimePicker.getCurrentHour();
+				int m = mTimePicker.getCurrentMinute();
+				Logger.d(TAG, h + " : " + m);
+				
+				Calendar clockTime = Calendar.getInstance();
+				clockTime.setTime(new Date()); 
+				
+				int nowHour = clockTime.get(Calendar.HOUR_OF_DAY);
+				int nowMin = clockTime.get(Calendar.MINUTE);
+				if( nowHour > h){
+					clockTime.add(Calendar.DAY_OF_MONTH, 1);
+				} else if( nowHour == h && nowMin > m){
+					clockTime.add(Calendar.DAY_OF_MONTH, 1);
+				}
+				clockTime.set(Calendar.HOUR_OF_DAY, h);
+				clockTime.set(Calendar.MINUTE, m);
+				
+				long clockTimeLong = clockTime.getTimeInMillis();
+
 				// Logger.d(TAG, "onStopTrackingTouch");
 				String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
-				int bright = ((MainApplication) getApplication()).getXiaoyi().getBright();
-				int voice = ((MainApplication) getApplication()).getXiaoyi().getVolice();
-				new Thread(new SendDeviceInfoRunnable(ip, bright, voice)).start();
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-				// Logger.d(TAG, "onStartTrackingTouch");
-			}
-
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				switch (mScrollType) {
-				case BRIGHT:
-					((MainApplication) getApplication()).getXiaoyi().setBright(progress);
-					break;
-				case VOICE:
-					((MainApplication) getApplication()).getXiaoyi().setVolice(progress);
-					break;
-				default:
-					break;
-				}
+				new Thread(new SendClockRunnable(ip, clockTimeLong , mTitle.getText().toString())).start();
 			}
 		});
+
 	}
 
 	/** Show a image Select dialog, let user to select a image to send */
@@ -243,7 +242,7 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 		// get the name & fileSize of the uri-file
 		Pair<String, Integer> pair;
 		try {
-			pair = Utility.getFileNameAndSize(ScrollBarActivity.this, uri);
+			pair = Utility.getFileNameAndSize(ClockActivity.this, uri);
 		} catch (IOException e) {
 			return null;
 		}
@@ -270,16 +269,16 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 	 * 
 	 * @author luochenxun
 	 */
-	class SendDeviceInfoRunnable implements Runnable {
+	class SendClockRunnable implements Runnable {
 
 		private String mIp;
-		private int mBright;
-		private int mVoice;
+		private long mClockTimeLong;
+		private String mClockMsg;
 
-		SendDeviceInfoRunnable(String ip, int bright, int voice) {
+		SendClockRunnable(String ip, long clockTimeLong , String msg) {
 			mIp = ip;
-			mBright = bright;
-			mVoice = voice;
+			mClockTimeLong = clockTimeLong;
+			mClockMsg = msg;
 		}
 
 		@Override
@@ -289,14 +288,15 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 
 			try {
 				socket.bind(null);
-				socket.connect((new InetSocketAddress(mIp, WifiP2pConfigInfo.LISTEN_PORT)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+				socket.connect((new InetSocketAddress(mIp, 
+						WifiP2pConfigInfo.LISTEN_PORT)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
 				Logger.d(TAG, "Client socket - " + socket.isConnected());
 				OutputStream stream = socket.getOutputStream();
 				// send cmd
-				stream.write(WifiP2pConfigInfo.COMMAND_ID_SENDBACK_DEVICE_INFO);
+				stream.write(WifiP2pConfigInfo.COMMAND_ID_CLOCK);
 				// send data
-				String strSend = "light:" + mBright + "sound:" + mVoice;
+				String strSend = "msg:" + mClockMsg + "time:" + mClockTimeLong;
 				stream.write(strSend.getBytes(), 0, strSend.length());
 
 				Logger.d(TAG, "Client: Data written strSend:" + strSend);

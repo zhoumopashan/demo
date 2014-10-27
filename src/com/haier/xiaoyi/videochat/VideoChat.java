@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,13 +22,13 @@ import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Size;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.KeyEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
 
 public class VideoChat extends Base implements SurfaceHolder.Callback, Camera.PreviewCallback, OnBitmapLoaded {
@@ -191,13 +192,16 @@ public class VideoChat extends Base implements SurfaceHolder.Callback, Camera.Pr
 
 	@Override
 	protected void onDestroy() {
-		super.onDestroy();
+		handleExitVideo();
+		
 		try {
 			videoReceiveListener.close();
 			voiceListener.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		super.onDestroy();
 	}
 
 	/**
@@ -299,6 +303,53 @@ public class VideoChat extends Base implements SurfaceHolder.Callback, Camera.Pr
 				}
 			}
 		}).start();
+	}
+	
+	private void handleExitVideo(){
+		String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
+		new Thread(new StopClientVideoRunnable(ip)).start();
+	}
+	
+	class StopClientVideoRunnable implements Runnable {
+
+		private String mIp;
+
+		StopClientVideoRunnable(String ip) {
+			mIp = ip;
+		}
+
+		@Override
+		public void run() {
+			/* Construct socket */
+			Socket socket = new Socket();
+
+			try {
+				socket.bind(null);
+				socket.connect((new InetSocketAddress(mIp, WifiP2pConfigInfo.LISTEN_PORT)),
+						WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+
+				Logger.d("video", "Client socket - " + socket.isConnected());
+				OutputStream stream = socket.getOutputStream();
+				// send cmd
+				stream.write(WifiP2pConfigInfo.COMMAND_ID_STOP_CLIENT_VIDEO);
+
+			} catch (IOException e) {
+				Logger.e("video", e.getMessage());
+			} finally {
+				if (socket != null) {
+					if (socket.isConnected()) {
+						try {
+							socket.close();
+							Logger.d("video", "socket.close();");
+						} catch (IOException e) {
+							// Give up
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+
 	}
 
 }

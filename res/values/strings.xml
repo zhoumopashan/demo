@@ -11,6 +11,11 @@
     <string name="personal">自定义</string>
     <string name="light">亮度调节</string>
     <string name="sound">音量调节</string>
+    <string name="clock_ok">设定闹钟</string>
+    <string name="clock_close">关闭闹钟</string>
+    <string name="clock_getup">起床提醒</string>
+    <string name="clock_sleep">睡眠提醒</string>
+    <string name="clock_eat">吃饭提醒</string>
 
     <!-- Wifi p2p layouts -->
     <string name="wifi_search_main_retry">重新搜索</string>
@@ -38,6 +43,7 @@
     <string name="wifip2p_connecting_canceled">连接已取消</string>
     <string name="wifip2p_connecting_cancel_failed">连接取消失败，错误码 :%1$d</string>
     <string name="wifip2p_connecting_failed">连接失败</string>
+    <string name="wifip2p_wait">请等待设备连接</string>
 
     <!-- tips -->
     <string name="dialog_exit_app">您真的要退出程序吗？</string>

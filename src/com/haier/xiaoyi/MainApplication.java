@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
@@ -17,6 +18,8 @@ public class MainApplication extends Application {
 	private final static String TAG = "MainApplication";
 
 	private static XiaoYi mXiaoyi = new XiaoYi();
+	private WifiP2pDevice mLocalDevice = null;
+	
 	private List<Activity> activities = new ArrayList<Activity>();
 	public static int ScreenHigh , ScreenWidth;
 
@@ -67,6 +70,14 @@ public class MainApplication extends Application {
 		manager.getDefaultDisplay().getMetrics(dm);
 		ScreenHigh = dm.widthPixels;
 		ScreenWidth = dm.heightPixels;
+	}
+
+	public WifiP2pDevice getLocalDevice() {
+		return mLocalDevice;
+	}
+
+	public void setLocalDevice(WifiP2pDevice mLocalDevice) {
+		this.mLocalDevice = mLocalDevice;
 	}
 
 }

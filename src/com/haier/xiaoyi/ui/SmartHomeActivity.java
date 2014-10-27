@@ -1,5 +1,10 @@
 package com.haier.xiaoyi.ui;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,6 +18,7 @@ import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.videochat.VideoChat;
+import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
 public class SmartHomeActivity extends Activity implements View.OnClickListener {
 
@@ -112,7 +118,7 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 		switch (v.getId()) {
 		case R.id.smart_home_btn_1:
 			Logger.d(TAG, "care1_btn");
-			startActivity(new Intent(SmartHomeActivity.this,VideoChat.class));
+			handleSmartHomeBtnClick();
 			break;
 //		case R.id.care2_btn:
 //			Logger.d(TAG, "care2_btn");
@@ -160,6 +166,53 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 //
 //		mBtn4 = (TextView) findViewById(R.id.care4_btn);
 //		mBtn4.setOnClickListener(this);
+	}
+	
+	private void handleSmartHomeBtnClick(){
+		String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
+		new Thread(new OpenClientVideoRunnable(ip)).start();
+		startActivity(new Intent(SmartHomeActivity.this,VideoChat.class));
+	}
+	
+	class OpenClientVideoRunnable implements Runnable {
+
+		private String mIp;
+
+		OpenClientVideoRunnable(String ip) {
+			mIp = ip;
+		}
+
+		@Override
+		public void run() {
+			/* Construct socket */
+			Socket socket = new Socket();
+
+			try {
+				socket.bind(null);
+				socket.connect((new InetSocketAddress(mIp, WifiP2pConfigInfo.LISTEN_PORT)),
+						WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+
+				Logger.d(TAG, "Client socket - " + socket.isConnected());
+				OutputStream stream = socket.getOutputStream();
+				// send cmd
+				stream.write(WifiP2pConfigInfo.COMMAND_ID_START_CLIENT_VIDEO);
+
+			} catch (IOException e) {
+				Logger.e(TAG, e.getMessage());
+			} finally {
+				if (socket != null) {
+					if (socket.isConnected()) {
+						try {
+							socket.close();
+							Logger.d(TAG, "socket.close();");
+						} catch (IOException e) {
+							// Give up
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
 
 	}
 

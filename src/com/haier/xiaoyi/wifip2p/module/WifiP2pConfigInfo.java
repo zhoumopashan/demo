@@ -34,6 +34,13 @@ public class WifiP2pConfigInfo {
 	public static final int COMMAND_ID_SEND_DEVICE_INFO = 200;
 	public static final int COMMAND_ID_SENDBACK_DEVICE_INFO = 201;
 	
+	/**  **/
+	public static final int COMMAND_ID_CLOCK = 205;
+	
+	/**  */
+	public static final int COMMAND_ID_START_CLIENT_VIDEO = 220;
+	public static final int COMMAND_ID_STOP_CLIENT_VIDEO = 221;
+	
 	/** About server Socket */
 	/** ServerSocket's Port */
 	public static final int LISTEN_PORT = 8988;

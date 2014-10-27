@@ -62,12 +62,17 @@
             android:name=".ui.CareActivity"
             android:screenOrientation="portrait" >
         </activity>
+               <activity
+            android:name=".ui.ClockActivity"
+            android:screenOrientation="portrait" >
+        </activity>
         <activity
             android:name=".ui.SmartHomeActivity"
             android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".videochat.VideoChat"
+            android:launchMode="singleTop"
             android:screenOrientation="portrait" >
         </activity>
         <activity
