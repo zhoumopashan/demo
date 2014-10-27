@@ -181,47 +181,49 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 		mLeftView = (ImageView) findViewById(R.id.scrollbar_layout_light_left);
 		mRightView = (ImageView) findViewById(R.id.scrollbar_layout_light_right);
 		mSeekBar = (SeekBar) findViewById(R.id.scrollbar_layout_seekbar);
-		
+
 		Intent intent = getIntent();
-		if(intent == null || intent.getAction() == null){
+		if (intent == null || intent.getAction() == null) {
 			return;
 		}
-		
-		if(intent.getAction().equals("light")){
+
+		if (intent.getAction().equals("light")) {
 			mTitle.setText(getString(R.string.light));
 			mLeftView.setBackgroundResource(R.drawable.light_left);
 			mRightView.setBackgroundResource(R.drawable.light_right);
-			mSeekBar.setProgress(((MainApplication)getApplication()).getXiaoyi().getBright());
+			mSeekBar.setProgress(((MainApplication) getApplication()).getXiaoyi().getBright());
 			mScrollType = BRIGHT;
-		}
-		else if(intent.getAction().equals("sound")){
+		} else if (intent.getAction().equals("sound")) {
 			mTitle.setText(getString(R.string.sound));
+			mLeftView.setBackgroundResource(R.drawable.sound_left);
+			mRightView.setBackgroundResource(R.drawable.sound_right);
+			mSeekBar.setProgress(((MainApplication) getApplication()).getXiaoyi().getVolice());
 			mScrollType = VOICE;
 		}
-		
+
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-//				Logger.d(TAG, "onStopTrackingTouch");
-				String ip = ((MainApplication)getApplication()).getXiaoyi().getHostIp();
-				int bright = ((MainApplication)getApplication()).getXiaoyi().getBright();
-				int voice = ((MainApplication)getApplication()).getXiaoyi().getVolice();
-				new Thread(new SendDeviceInfoRunnable(ip,bright,voice)).start();
+				// Logger.d(TAG, "onStopTrackingTouch");
+				String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
+				int bright = ((MainApplication) getApplication()).getXiaoyi().getBright();
+				int voice = ((MainApplication) getApplication()).getXiaoyi().getVolice();
+				new Thread(new SendDeviceInfoRunnable(ip, bright, voice)).start();
 			}
-			
+
 			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
-//				Logger.d(TAG, "onStartTrackingTouch");				
+				// Logger.d(TAG, "onStartTrackingTouch");
 			}
-			
+
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				switch (mScrollType) {
 				case BRIGHT:
-					((MainApplication)getApplication()).getXiaoyi().setBright(progress);
+					((MainApplication) getApplication()).getXiaoyi().setBright(progress);
 					break;
 				case VOICE:
-					((MainApplication)getApplication()).getXiaoyi().setVolice(progress);
+					((MainApplication) getApplication()).getXiaoyi().setVolice(progress);
 					break;
 				default:
 					break;
@@ -266,30 +268,29 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 
 	/**
 	 * A send file task, send the file(uri) to the device mark by host & port
+	 * 
 	 * @author luochenxun
 	 */
 	class SendDeviceInfoRunnable implements Runnable {
-		
+
 		private String mIp;
 		private int mBright;
 		private int mVoice;
-		
-		SendDeviceInfoRunnable(String ip , int bright , int voice){
+
+		SendDeviceInfoRunnable(String ip, int bright, int voice) {
 			mIp = ip;
 			mBright = bright;
 			mVoice = voice;
 		}
-		
+
 		@Override
 		public void run() {
 			/* Construct socket */
 			Socket socket = new Socket();
-			
+
 			try {
 				socket.bind(null);
-				socket.connect((new InetSocketAddress(mIp, 
-						WifiP2pConfigInfo.LISTEN_PORT)), 
-						WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+				socket.connect((new InetSocketAddress(mIp, WifiP2pConfigInfo.LISTEN_PORT)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
 				Logger.d(TAG, "Client socket - " + socket.isConnected());
 				OutputStream stream = socket.getOutputStream();
@@ -298,7 +299,7 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 				// send data
 				String strSend = "light:" + mBright + "sound:" + mVoice;
 				stream.write(strSend.getBytes(), 0, strSend.length());
-				
+
 				Logger.d(TAG, "Client: Data written strSend:" + strSend);
 			} catch (IOException e) {
 				Logger.e(TAG, e.getMessage());
@@ -316,7 +317,7 @@ public class ScrollBarActivity extends Activity implements View.OnClickListener 
 				}
 			}
 		}
-		
+
 	}
 
 }
