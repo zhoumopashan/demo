@@ -51,6 +51,7 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 	private TextView mTitle;
 	private TimePicker mTimePicker;
 	private View mOk;
+	private View mClose;
 
 	/******************************
 	 * InnerClass <br>
@@ -182,6 +183,7 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 		mTimePicker.setIs24HourView(true);
 		mTimePicker.setEnabled(true);
 		mOk = findViewById(R.id.clock_layout_ok);
+		mClose = findViewById(R.id.clock_layout_close);
 
 		Intent intent = getIntent();
 		if (intent == null || intent.getAction() == null) {
@@ -207,24 +209,17 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 				int m = mTimePicker.getCurrentMinute();
 				Logger.d(TAG, h + " : " + m);
 				
-				Calendar clockTime = Calendar.getInstance();
-				clockTime.setTime(new Date()); 
-				
-				int nowHour = clockTime.get(Calendar.HOUR_OF_DAY);
-				int nowMin = clockTime.get(Calendar.MINUTE);
-				if( nowHour > h){
-					clockTime.add(Calendar.DAY_OF_MONTH, 1);
-				} else if( nowHour == h && nowMin > m){
-					clockTime.add(Calendar.DAY_OF_MONTH, 1);
-				}
-				clockTime.set(Calendar.HOUR_OF_DAY, h);
-				clockTime.set(Calendar.MINUTE, m);
-				
-				long clockTimeLong = clockTime.getTimeInMillis();
-
 				// Logger.d(TAG, "onStopTrackingTouch");
 				String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
-				new Thread(new SendClockRunnable(ip, clockTimeLong , mTitle.getText().toString())).start();
+				new Thread(new SendClockRunnable(ip, h,m , mTitle.getText().toString())).start();
+			}
+		});
+		
+		mClose.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
+				new Thread(new SendCloseClockRunnable(ip) ).start();
 			}
 		});
 
@@ -272,12 +267,14 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 	class SendClockRunnable implements Runnable {
 
 		private String mIp;
-		private long mClockTimeLong;
+		private int mHour;
+		private int mMin;
 		private String mClockMsg;
 
-		SendClockRunnable(String ip, long clockTimeLong , String msg) {
+		SendClockRunnable(String ip, int hour , int min , String msg) {
 			mIp = ip;
-			mClockTimeLong = clockTimeLong;
+			mHour = hour;
+			mMin = min;
 			mClockMsg = msg;
 		}
 
@@ -296,10 +293,61 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 				// send cmd
 				stream.write(WifiP2pConfigInfo.COMMAND_ID_CLOCK);
 				// send data
-				String strSend = "msg:" + mClockMsg + "time:" + mClockTimeLong;
-				stream.write(strSend.getBytes(), 0, strSend.length());
+				stream.write(mClockType);
+				stream.write(mHour);
+				stream.write(mMin);
+				mClockMsg += "     " +  "      \n" ;
+				stream.write(mClockMsg.getBytes(), 0, mClockMsg.length());
 
-				Logger.d(TAG, "Client: Data written strSend:" + strSend);
+				Logger.d(TAG, "Client: Data written strSend:" + mClockMsg);
+			} catch (IOException e) {
+				Logger.e(TAG, e.getMessage());
+			} finally {
+				if (socket != null) {
+					if (socket.isConnected()) {
+						try {
+							socket.close();
+							Logger.d(TAG, "socket.close();");
+						} catch (IOException e) {
+							// Give up
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+
+	}
+	
+	class SendCloseClockRunnable implements Runnable {
+
+		private String mIp;
+		private int mHour;
+		private int mMin;
+		private String mClockMsg;
+
+		SendCloseClockRunnable(String ip) {
+			mIp = ip;
+		}
+
+		@Override
+		public void run() {
+			/* Construct socket */
+			Socket socket = new Socket();
+
+			try {
+				socket.bind(null);
+				socket.connect((new InetSocketAddress(mIp, 
+						WifiP2pConfigInfo.LISTEN_PORT)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+
+				Logger.d(TAG, "Client socket - " + socket.isConnected());
+				OutputStream stream = socket.getOutputStream();
+				// send cmd
+				stream.write(WifiP2pConfigInfo.COMMAND_ID_CLOSE_CLOCK);
+				// send data
+				stream.write(mClockType);
+
+				Logger.d(TAG, "Client: Data written strSend:" + mClockMsg);
 			} catch (IOException e) {
 				Logger.e(TAG, e.getMessage());
 			} finally {

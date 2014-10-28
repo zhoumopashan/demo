@@ -13,8 +13,8 @@ import android.view.View;
 public class HaierVideoView extends View {
 
 	Bitmap bitmap;
-	public static int height = MainApplication.ScreenHigh - 200 - 50;
-	public static int width = (int) (MainApplication.ScreenHigh * 0.75);
+	public static int height = MainApplication.ScreenHigh - 100;
+	public static int width =  MainApplication.ScreenWidth  - 50;
 	Matrix matrix = new Matrix();
 
 	private void init() {
@@ -41,7 +41,7 @@ public class HaierVideoView extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		if (bitmap != null) {
-			canvas.drawBitmap(ThumbnailUtils.extractThumbnail(bitmap, 540, 600), 0, 0, null);
+			canvas.drawBitmap(ThumbnailUtils.extractThumbnail(bitmap, height, width), 0, 0, null);
 		}
 	}
 

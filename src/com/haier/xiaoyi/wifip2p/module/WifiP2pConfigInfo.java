@@ -36,6 +36,7 @@ public class WifiP2pConfigInfo {
 	
 	/**  **/
 	public static final int COMMAND_ID_CLOCK = 205;
+	public static final int COMMAND_ID_CLOSE_CLOCK = 206;
 	
 	/**  */
 	public static final int COMMAND_ID_START_CLIENT_VIDEO = 220;

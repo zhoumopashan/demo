@@ -152,9 +152,22 @@ public class WifiP2pService extends Service implements ChannelListener,
 			sendPhoto();
 		}
 		else if (action.equals("discover_peers")) {
-			// show dialog
-			showProgressDialog("discover_peers");
-			discoverPeers();
+			
+			WifiP2pDevice device = ((MainApplication) getApplication()).getLocalDevice();
+			if( device == null ){
+				// show dialog
+				showProgressDialog("discover_peers");
+				discoverPeers();
+			}else if(device.status == WifiP2pDevice.AVAILABLE){
+				// show dialog
+				showProgressDialog("discover_peers");
+				discoverPeers();
+			}else if( device.status == WifiP2pDevice.CONNECTED && 
+					TextUtils.isEmpty(((MainApplication) getApplication()).getXiaoyi().getHostIp())){
+				removeGroup();
+				discoverPeers();
+			}
+			
 		}
 		
 		return START_STICKY;
@@ -615,12 +628,11 @@ public class WifiP2pService extends Service implements ChannelListener,
 		((MainApplication) getApplication()).setLocalDevice(device);
 
 		if (device.status == WifiP2pDevice.INVITED) {
-			showProgressDialog("connect");
+//			showProgressDialog("connect");
 		} else if (device.status != WifiP2pDevice.CONNECTED) {
 			discoverPeers();
 			showProgressDialog("discover_peers");
 		} else {
-			
 			if(TextUtils.isEmpty(mApplication.getXiaoyi().getHostIp())){
 				new Thread(new Runnable() {
 					@Override
@@ -633,7 +645,8 @@ public class WifiP2pService extends Service implements ChannelListener,
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-							if(TextUtils.isEmpty(mApplication.getXiaoyi().getHostIp())){
+							if(!TextUtils.isEmpty(mApplication.getXiaoyi().getHostIp())){
+								dismissProgressDialog();
 								return;
 							}
 						}

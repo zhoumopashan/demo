@@ -11,6 +11,7 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -731,6 +732,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	private boolean connectCheck(){
 		WifiP2pDevice device = ((MainApplication)getApplication()).getLocalDevice();
 		if(device.status != WifiP2pDevice.CONNECTED){
+			Toast.makeText(this, R.string.wifip2p_wait, Toast.LENGTH_SHORT).show();
+			startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
+			return false;
+		}else if(TextUtils.isEmpty(((MainApplication)getApplication()).getXiaoyi().getHostIp())){
 			Toast.makeText(this, R.string.wifip2p_wait, Toast.LENGTH_SHORT).show();
 			startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 			return false;
