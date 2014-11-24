@@ -5,9 +5,11 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
+import android.net.wifi.p2p.WifiP2pInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -736,7 +738,15 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 			return false;
 		}else if(TextUtils.isEmpty(((MainApplication)getApplication()).getXiaoyi().getHostIp())){
-			Toast.makeText(this, R.string.wifip2p_wait, Toast.LENGTH_SHORT).show();
+			
+			WifiP2pInfo info = ((MainApplication) getApplication()).getXiaoyi().getWifiP2pInfo();
+			if (info != null && info.groupFormed) {
+				((MainApplication) getApplication()).getXiaoyi().setHostIp(info.groupOwnerAddress.getHostAddress());
+				startService(new Intent(this,WifiP2pService.class).setAction("send_peer_info"));
+				return true;
+			}
+			
+//			Toast.makeText(this, R.string.wifip2p_wait, Toast.LENGTH_SHORT).show();
 			startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 			return false;
 		}

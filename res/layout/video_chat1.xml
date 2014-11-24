@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
 
     <com.haier.xiaoyi.videochat.HaierVideoView
         android:id="@+id/video_chat_myview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
         android:layout_margin="20dip"/>
 
     <SurfaceView
         android:id="@+id/video_chat_preview"
         android:layout_width="150dip"
         android:layout_height="150dip"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
+        android:layout_gravity="top|right"
         android:layout_margin="10dip"
         android:layout_marginTop="20dip" />
 
-</RelativeLayout>
+</FrameLayout>

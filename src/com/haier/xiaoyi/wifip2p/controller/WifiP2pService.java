@@ -164,11 +164,17 @@ public class WifiP2pService extends Service implements ChannelListener,
 				discoverPeers();
 			}else if( device.status == WifiP2pDevice.CONNECTED && 
 					TextUtils.isEmpty(((MainApplication) getApplication()).getXiaoyi().getHostIp())){
-				removeGroup();
+//				removeGroup();
 				discoverPeers();
 			}
 			
 		}
+		else if( action.equals("send_peer_info") ){
+			handleSendPeerInfo();
+		}
+		
+		
+		intent = null;
 		
 		return START_STICKY;
 	}
@@ -672,6 +678,7 @@ public class WifiP2pService extends Service implements ChannelListener,
 		Logger.d(TAG, "onPeersAvailable");
 		mP2pDeviceList.clear();
 		mP2pDeviceList.addAll(peers.getDeviceList());
+
 //		dismissProgressDialog();
 
 //		if (mP2pDeviceList.size() == 0) {
