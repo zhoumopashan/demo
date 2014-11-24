@@ -36,7 +36,7 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 	 ******************************/
 	/** Layouts & Views */
 	private View mBtn1;
-//	private View mBtn2;
+	private View mBtn2;
 //	private View mBtn3;
 //	private View mBtn4;
 
@@ -120,9 +120,9 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 			Logger.d(TAG, "care1_btn");
 			handleSmartHomeBtnClick();
 			break;
-//		case R.id.care2_btn:
-//			Logger.d(TAG, "care2_btn");
-//			break;
+		case R.id.smart_home_btn_2:
+			Logger.d(TAG, "care2_btn");
+			break;
 //		case R.id.care3_btn:
 //			Logger.d(TAG, "care3_btn");
 //			break;
@@ -157,9 +157,9 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 	private void initLayoutsAndViews() {
 		mBtn1 = (TextView) findViewById(R.id.smart_home_btn_1);
 		mBtn1.setOnClickListener(this);
-//
-//		mBtn2 = (TextView) findViewById(R.id.care2_btn);
-//		mBtn2.setOnClickListener(this);
+
+		mBtn2 = (TextView) findViewById(R.id.smart_home_btn_2);
+		mBtn2.setOnClickListener(this);
 //
 //		mBtn3 = (TextView) findViewById(R.id.care3_btn);
 //		mBtn3.setOnClickListener(this);

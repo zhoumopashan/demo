@@ -272,17 +272,17 @@ public class VideoChat extends Base implements SurfaceHolder.Callback, Camera.Pr
 		chatterIP = mApplication.getXiaoyi().getHostIp();
 		
 		// start voice chat
-//		try {
-//			voiceListener = UDPVoiceListener.getInstance(InetAddress.getByName(chatterIP));
-//			voiceListener.open();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			try {
-//				voiceListener.close();
-//			} catch (IOException e1) {
-//				e1.printStackTrace();
-//			}
-//		}
+		try {
+			voiceListener = UDPVoiceListener.getInstance(InetAddress.getByName(chatterIP));
+			voiceListener.open();
+		} catch (Exception e) {
+			e.printStackTrace();
+			try {
+				voiceListener.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}
 
 		new Thread(new Runnable() {
 			@Override

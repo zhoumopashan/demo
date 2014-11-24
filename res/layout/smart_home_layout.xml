@@ -37,9 +37,20 @@
         android:id="@+id/smart_home_btn_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:clickable="true"
         android:text="@string/smart_home_1"
+        android:textColor="@drawable/setting_word_btn"
+        android:textSize="25dp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/smart_home_btn_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:clickable="true"
+        android:text="@string/smart_home_2"
         android:textColor="@drawable/setting_word_btn"
         android:textSize="25dp"
         android:textStyle="bold" />

@@ -2,14 +2,10 @@ package com.haier.xiaoyi.client.util;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 
-import com.haier.xiaoyi.client.controller.WifiP2pService;
-
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.DialogInterface.OnClickListener;
-import android.os.Looper;
+
+import com.haier.xiaoyi.client.controller.WifiP2pService;
 
 public class CrashHandler implements UncaughtExceptionHandler {
 	public static final String TAG = "CrashHandler";

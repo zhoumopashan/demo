@@ -242,9 +242,9 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	 * Init the environment of this service
 	 */
 	private void initEnvironment() {
-		// CrashHandler
-		CrashHandler crashHandler = CrashHandler.getInstance();    
-        crashHandler.init(this); 
+//		// CrashHandler
+//		CrashHandler crashHandler = CrashHandler.getInstance();    
+//        crashHandler.init(this); 
         
 		// Get wifiP2p manager
 		mWifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);

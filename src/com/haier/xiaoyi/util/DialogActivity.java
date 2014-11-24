@@ -48,6 +48,7 @@ public class DialogActivity extends Activity {
 					finish();
 				}
 			});
+			mProgressDialog.setCancelable(false);
 		}
 		else if(action.equals("connect")){
 			if (mProgressDialog != null && mProgressDialog.isShowing()) {
@@ -63,6 +64,7 @@ public class DialogActivity extends Activity {
 							finish();
 						}
 					});
+			mProgressDialog.setCancelable(false);
 		}
 		else if(action.equals("dismiss")){
 			if (mProgressDialog != null && mProgressDialog.isShowing()) {
@@ -88,6 +90,7 @@ public class DialogActivity extends Activity {
 			if (mProgressDialog != null && mProgressDialog.isShowing()) {
 				mProgressDialog.dismiss();
 			}
+//			mProgressDialog.setCancelable(false);
 			mProgressDialog = ProgressDialog.show(this, getString(R.string.wifip2p_p2p_scanning_title), 
 					getString(R.string.wifip2p_p2p_scanning), true, true, 
 					new DialogInterface.OnCancelListener() {
@@ -97,6 +100,7 @@ public class DialogActivity extends Activity {
 					finish();
 				}
 			});
+			mProgressDialog.setCancelable(false);
 		}
 		else if(action.equals("connect")){
 			if (mProgressDialog != null && mProgressDialog.isShowing()) {
@@ -112,6 +116,7 @@ public class DialogActivity extends Activity {
 							finish();
 						}
 					});
+			mProgressDialog.setCancelable(false);
 		}
 		else if(action.equals("dismiss")){
 			if (mProgressDialog != null && mProgressDialog.isShowing()) {
