@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <SurfaceView
+        android:id="@+id/video_chat_preview"
+        android:layout_width="200dip"
+        android:layout_height="200dip"
+        android:layout_gravity="center" />
+
+    <com.haier.xiaoyi.client.videochat.HaierVideoView
+        android:id="@+id/video_chat_myview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"/>
+
+</FrameLayout>
