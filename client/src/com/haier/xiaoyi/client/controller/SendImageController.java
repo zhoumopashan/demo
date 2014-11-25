@@ -220,15 +220,16 @@ public class SendImageController {
 	public void handleRecvFile(WifiP2pService service ,InputStream ins) {
 		// Mark the file's info
 		handleRecvFileInfo(ins);
-
+		
+		String extName = Utility.getFileExtName(mRecvFileName);
 		// Wait for ui's comfirm
-		String extName = ".jpg"; // default .
-		if (!mRecvFileName.isEmpty()) {
-			int dotIndex = mRecvFileName.lastIndexOf(".");
-			if (dotIndex != -1 && dotIndex != mRecvFileName.length() - 1) {
-				extName = mRecvFileName.substring(dotIndex);
-			}
-		}
+//		String extName = fileType; // default .
+//		if (!mRecvFileName.isEmpty()) {
+//			int dotIndex = mRecvFileName.lastIndexOf(".");
+//			if (dotIndex != -1 && dotIndex != mRecvFileName.length() - 1) {
+//				extName = mRecvFileName.substring(dotIndex);
+//			}
+//		}
 		Logger.d(TAG, "传输文件名：" + mRecvFileName + " ， 后缀 extName:" + extName);
 
 		recvFileAndSave(service ,ins, extName);
@@ -306,7 +307,12 @@ public class SendImageController {
 
 	public boolean recvFileAndSave(WifiP2pService service , InputStream ins, String extName) {
 		try {
-			final File recvFile = new File(Environment.getExternalStorageDirectory() + "/file-" + System.currentTimeMillis() + extName);
+			File ecanDir = new File(Environment.getExternalStorageDirectory() + "/ecan");
+			if(!ecanDir.exists()){
+				ecanDir.mkdirs();
+			}
+			final File recvFile = new File(Environment.getExternalStorageDirectory() + 
+					"/ecan/file-" + System.currentTimeMillis() + extName);
 
 			File dirs = new File(recvFile.getParent());
 			if (!dirs.exists())

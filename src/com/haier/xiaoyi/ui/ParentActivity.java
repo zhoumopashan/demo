@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.net.Uri;
@@ -31,6 +32,9 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 	 * Macros <br>
 	 ******************************/
 	private static final String TAG = "ParentActivity";
+	private static final int MSG_SHOWDIALOG = 100;
+	private static final int MSG_DISSMISS_DIALOG = 101;
+	private static final int MSG_SHOW_DIALOG_PROCESS = 102;
 
 	/******************************
 	 * public Members <br>
@@ -51,6 +55,7 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 	
 	/** Message Hander */
 	private MainHandler mMainHandler;
+	private ProgressDialog mProgressDialog;
 
 	// MainHandler Definition
 	class MainHandler extends Handler {
@@ -58,13 +63,34 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 
 		@Override
 		public void handleMessage(Message msg) {
-			// switch (msg.what) {
-			// case MSG_DOWNLOAD_PROCESS_CHANGE:
-			// getUpdateHelper().setDialogProcess(msg.arg1);
-			// break;
-			// default:
-			// break;
-			// }
+			switch (msg.what) {
+			case MSG_SHOWDIALOG:
+				if (mProgressDialog != null && mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+				mProgressDialog = new ProgressDialog(ParentActivity.this);  
+				mProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);  
+				mProgressDialog.setTitle(getString(R.string.wifip2p_p2p_scanning_title));  
+				mProgressDialog.setMessage(getString(R.string.send_long_time));  
+				mProgressDialog.setMax(msg.arg1);  
+				mProgressDialog.setProgress(0);  
+				mProgressDialog.setIndeterminate(false);  
+				mProgressDialog.setCancelable(false); 
+				mProgressDialog.show();
+				break;
+			case MSG_DISSMISS_DIALOG:
+				if (mProgressDialog != null && mProgressDialog.isShowing()) {
+					mProgressDialog.dismiss();
+				}
+				break;
+			case MSG_SHOW_DIALOG_PROCESS:
+				if (mProgressDialog != null && mProgressDialog.isShowing()) {
+					mProgressDialog.setProgress(msg.arg1);
+				}
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -135,6 +161,7 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 			startActivity(new Intent(ParentActivity.this,ScrollBarActivity.class).setAction("sound"));
 			break;
 		case R.id.persional:
+			startSelectVideo();
 			Logger.d(TAG, "persional");
 			break;
 		default:
@@ -155,9 +182,17 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 				return;
 			}
 			Uri uri = data.getData();
-//			mP2pService.getSendImageController().sendFile(uri , mP2pService);
-//			((MainApplication)getApplication()).getXiaoyi().setPhotoUri(uri);
-//			startService(new Intent(this,WifiP2pService.class).setAction("send_photo"));
+			String host= ((MainApplication)getApplication()).getXiaoyi().getHostIp();
+			int port = WifiP2pConfigInfo.LISTEN_PORT;
+			new Thread(new MySendFileRunable(host,port,uri,getFileInfo(uri),getInputStream(uri))).start();
+		}
+		
+		if(requestCode == WifiP2pConfigInfo.REQUEST_CODE_SELECT_VIDEO){
+			if (data == null) {
+				Logger.e(TAG, "onActivityResult data == null, no choice.");
+				return;
+			}
+			Uri uri = data.getData();
 			String host= ((MainApplication)getApplication()).getXiaoyi().getHostIp();
 			int port = WifiP2pConfigInfo.LISTEN_PORT;
 			new Thread(new MySendFileRunable(host,port,uri,getFileInfo(uri),getInputStream(uri))).start();
@@ -203,6 +238,13 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 		intent.setType("image/*");
 		startActivityForResult(intent, WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE);
+	}
+	
+	/** Show a image Select dialog, let user to select a image to send */
+	private void startSelectVideo() {
+		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+		intent.setType("video/*");
+		startActivityForResult(intent, WifiP2pConfigInfo.REQUEST_CODE_SELECT_VIDEO);
 	}
 	
 	/** Get the file's info */
@@ -259,6 +301,7 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 		
 		private boolean sendFile() {
 			Boolean result = Boolean.TRUE;
+			boolean isShowDialog = false;
 			Socket socket = new Socket();
 			try {
 				// connect the dst server
@@ -280,14 +323,35 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 				outs.write(fileInfo.length());
 				outs.write(fileInfo.getBytes(), 0, fileInfo.length());
 				
+				
+				// show a dialog if need a long time
+				isShowDialog = (ins.available() > 500000);
+				Message mmsg;
+				if(isShowDialog){
+					mmsg = mMainHandler.obtainMessage(MSG_SHOWDIALOG);
+					mmsg.arg1 = ins.available();
+					mMainHandler.sendMessage(mmsg);
+				}
+				
 				// output the file's stream
 				if(ins == null){
 					return false;
 				}
 				byte buf[] = new byte[1024];
-				int len;
+				int len,sum  = 0;
 				while ((len = ins.read(buf)) != -1) {
+					sum += len;
+					// show a dialog if need a long time
+					if(isShowDialog && !mMainHandler.hasMessages(MSG_SHOW_DIALOG_PROCESS)){
+						mmsg = mMainHandler.obtainMessage(MSG_SHOW_DIALOG_PROCESS);
+						mmsg.arg1 = sum;
+						mMainHandler.sendMessage(mmsg);
+					}
 					outs.write(buf, 0, len);
+				}
+				// show a dialog if need a long time
+				if(isShowDialog){
+					mMainHandler.sendEmptyMessage(MSG_DISSMISS_DIALOG);
 				}
 
 				// close socket

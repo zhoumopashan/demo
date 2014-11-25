@@ -10,6 +10,7 @@
     <string name="str_sleep">睡眠提醒</string>
     <string name="str_eat">吃饭提醒</string>
     <string name="personal">自定义</string>
+    <string name="tell_a_story">讲故事</string>
     <string name="light">亮度调节</string>
     <string name="sound">音量调节</string>
     <string name="clock_ok">设定闹钟</string>
@@ -27,6 +28,7 @@
     <string name="wifip2p_p2p_not_open">您手机的wifi直联模式没有打开，请打开手机wifi，并取消当前正在连接的Wifi网络（Wifi路由器）</string>
     <string name="wifip2p_p2p_scanning_title">注意</string>
     <string name="wifip2p_p2p_scanning">正在扫描附近设备</string>
+    <string name="send_long_time">所传送文件较大，可能需要较长时间，请耐心等待...</string>
     <string name="wifip2p_send_peerinfo_success">成功发送连接请求信息</string>
     <string name="wifip2p_send_peerinfo_failed">发送连接请求信息失败</string>
     <string name="wifip2p_send_file_success">文件发送成功</string>

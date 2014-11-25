@@ -29,7 +29,7 @@ public class Utility {
 	
 	private static final String TAG = "Utility";
 
-	static private String getMIMEType(File file) {
+	static public String getMIMEType(File file) {
 		String type = "*/*";
 		String fName = file.getName();
 		int dotIndex = fName.lastIndexOf(".");
@@ -45,18 +45,56 @@ public class Utility {
 		}
 		return type;
 	}
+	
+	static public String getMINEType(String filename){
+		String type = "*/*";
+		String fName = filename;
+		int dotIndex = fName.lastIndexOf(".");
+		if (dotIndex < 0) {
+			return type;
+		}
+		String end = fName.substring(dotIndex, fName.length()).toLowerCase();
+		if (end == "")
+			return type;
+		for (int i = 0; i < MIME_MapTable.length; i++) {
+			if (end.equals(MIME_MapTable[i][0]))
+				type = MIME_MapTable[i][1];
+		}
+		return type; 
+	}
+	
+	static public String getFileExtName(String filename){
+		String type = "*/*";
+		String fName = filename;
+		int dotIndex = fName.lastIndexOf(".");
+		if (dotIndex < 0) {
+			return type;
+		}
+		String end = fName.substring(dotIndex, fName.length()).toLowerCase();
+		if (end == "")
+			return type;
+		for (int i = 0; i < MIME_MapTable.length; i++) {
+			if (end.equals(MIME_MapTable[i][0]))
+				type = MIME_MapTable[i][0];
+		}
+		return type; 
+	}
 
 	static public void openFile(WifiP2pService service, File file) {
-		// Uri uri = Uri.parse("file://"+file.getAbsolutePath());
+		
 		Logger.d("open File" , "fileName:" + file.getAbsolutePath());
-		Intent intent = new Intent(service,ViewPhotoActivity.class);
+/*		Intent intent = new Intent(service,ViewPhotoActivity.class);
 		intent.putExtra("path", file.getAbsolutePath());
 		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+*/
+		
+		Intent intent = new Intent();
+		Uri uri = Uri.parse("file://" + file.getAbsolutePath());
 //		intent.getExtras().putString("path", file.getAbsolutePath());
-//		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//		intent.setAction(Intent.ACTION_VIEW);
-//		String type = getMIMEType(file);
-//		intent.setDataAndType(/* uri */Uri.fromFile(file), type);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.setAction(Intent.ACTION_VIEW);
+		String type = getMIMEType(file);
+		intent.setDataAndType(/* uri */Uri.fromFile(file), type);
 		service.startActivity(intent);
 	}
 
