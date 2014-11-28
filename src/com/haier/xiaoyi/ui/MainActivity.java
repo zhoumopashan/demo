@@ -103,7 +103,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		initWindow();
 		initLayoutsAndViews();
 		
-		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
+//		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 	}
 	
 	@Override
@@ -175,9 +175,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	@Override
 	public void onClick(View v) {
 		
-		if(!connectCheck() && v.getId() != R.id.main_func_middle_btn){
-			return;
-		}
+//		if(!connectCheck() && v.getId() != R.id.main_func_middle_btn){
+//			return;
+//		}
 		
 		switch (v.getId()) {
 		case R.id.btn1:
@@ -186,6 +186,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			break;
 		case R.id.btn2:
 			Logger.d(TAG, "btn2 click");
+			startActivity(new Intent(MainActivity.this, SettingActivity.class));
 			break;
 		case R.id.btn3:
 			Logger.d(TAG, "btn3 click");
