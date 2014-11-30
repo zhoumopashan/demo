@@ -7,6 +7,8 @@ import java.net.MulticastSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
+
 import android.util.Log;
 
 /**
@@ -22,7 +24,7 @@ public abstract class UDPListener extends Listener {
 	private DatagramPacket packet;
 
 	// TODO 由子类来赋初始值
-	private int port = Constant.MESSAGE_PORT;
+	private int port = WifiP2pConfigInfo.WIFI_PORT;
 	private int default_bufferSize = 1024 * 2;
 	private byte[] bufferData;// 用来接收UDP发送的数据,考虑发送消息的类型来设置其大小
 

@@ -3,7 +3,6 @@ package com.haier.xiaoyi.client;
 import android.net.Uri;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
-import android.provider.Settings;
 
 public class XiaoYi {
 	private int mVolice = 0;
@@ -13,6 +12,8 @@ public class XiaoYi {
 	private WifiP2pInfo mWifiP2pInfo;
 	private String mHostIp = null;
 	private Uri mPhotoUri = null;
+	private String mWifiIp = null;
+	private boolean mIsWifiAvailable = false;
 
 	public int getVolice() {
 		return mVolice;
@@ -69,6 +70,22 @@ public class XiaoYi {
 
 	public void setPhotoUri(Uri mPhotoUri) {
 		this.mPhotoUri = mPhotoUri;
+	}
+
+	public String getWifiIp() {
+		return mWifiIp;
+	}
+
+	public void setWifiIp(String mWifiIp) {
+		this.mWifiIp = mWifiIp;
+	}
+
+	public boolean isWifiAvailable() {
+		return mIsWifiAvailable;
+	}
+
+	public void setWifiAvailable(boolean mIsWifiAvailable) {
+		this.mIsWifiAvailable = mIsWifiAvailable;
 	}
 	
 }

@@ -159,6 +159,8 @@ public class WifiP2pDemoActivity extends Activity implements WifiP2pActivityList
 		this.getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		initEnvironment();
 		initLayoutAndViews();
+		
+		startService( new Intent(this, WifiP2pService.class).setAction("discover_peers") );
 	}
 	
 	@Override

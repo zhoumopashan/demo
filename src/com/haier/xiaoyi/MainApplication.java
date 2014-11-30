@@ -12,6 +12,7 @@ import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.wifip2p.controller.IShowDialog;
 import com.haier.xiaoyi.wifip2p.controller.WifiP2pService;
 
 public class MainApplication extends Application {
@@ -19,6 +20,7 @@ public class MainApplication extends Application {
 
 	private static XiaoYi mXiaoyi = new XiaoYi();
 	private WifiP2pDevice mLocalDevice = null;
+	private IShowDialog mDialog = null;
 	
 	private List<Activity> activities = new ArrayList<Activity>();
 	public static int ScreenHigh , ScreenWidth;
@@ -78,6 +80,14 @@ public class MainApplication extends Application {
 
 	public void setLocalDevice(WifiP2pDevice mLocalDevice) {
 		this.mLocalDevice = mLocalDevice;
+	}
+
+	public IShowDialog getDialogHolder() {
+		return mDialog;
+	}
+
+	public void setDialogHolder(IShowDialog mDialog) {
+		this.mDialog = mDialog;
 	}
 
 }

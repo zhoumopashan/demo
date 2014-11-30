@@ -112,6 +112,7 @@ public class SettingActivity extends Activity implements View.OnClickListener {
 		switch (v.getId()) {
 		case R.id.setting1:
 			Logger.d(TAG, "setting1_btn");
+			startActivity(new Intent(this,WifiActivity.class));
 			break;
 		case R.id.setting2:
 			Logger.d(TAG, "setting2_btn");

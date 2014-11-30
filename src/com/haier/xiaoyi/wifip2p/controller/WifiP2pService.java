@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
@@ -25,11 +26,11 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.text.TextUtils;
 
 import com.haier.xiaoyi.MainApplication;
-import com.haier.xiaoyi.util.DialogActivity;
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.util.UdpHelper;
+import com.haier.xiaoyi.util.WifiUtil;
 import com.haier.xiaoyi.wifip2p.module.PeerInfo;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 import com.haier.xiaoyi.wifip2p.module.WrapRunable;
@@ -65,9 +66,12 @@ public class WifiP2pService extends Service implements ChannelListener,
 	 * device, work as a serverSocket
 	 */
 	private ThreadPoolManager mThreadPoolManager = null;
+	private ThreadPoolManagerWifi mThreadPoolManagerWifi = null;
 
 	/** The wifi p2p manager */
 	private WifiP2pManager mWifiP2pManager = null;
+	private WifiUtil mWifiUtil = null;
+	private UdpHelper mUdpHelper = null;
 
 	/** @see android.net.wifi.p2p.WifiP2pManager.Channel */
 	private Channel mChannel = null;
@@ -152,9 +156,10 @@ public class WifiP2pService extends Service implements ChannelListener,
 			sendPhoto();
 		}
 		else if (action.equals("discover_peers")) {
-			
-			WifiP2pDevice device = ((MainApplication) getApplication()).getLocalDevice();
-			if( device == null ){
+//			WifiP2pDevice device = ((MainApplication) getApplication()).getLocalDevice();
+			showProgressDialog("discover_peers");
+			discoverPeers();
+/*			if( device == null ){
 				// show dialog
 				showProgressDialog("discover_peers");
 				discoverPeers();
@@ -167,7 +172,7 @@ public class WifiP2pService extends Service implements ChannelListener,
 //				removeGroup();
 				discoverPeers();
 			}
-			
+*/			
 		}
 		else if( action.equals("send_peer_info") ){
 			handleSendPeerInfo();
@@ -194,9 +199,11 @@ public class WifiP2pService extends Service implements ChannelListener,
 		cancelDisconnect();
 		removeGroup();
 		mThreadPoolManager.destory();
+		mThreadPoolManagerWifi.destory();
 		if(mWifiP2pManager != null){
 			try {
 				mWifiP2pManager.stopPeerDiscovery(mChannel, null);
+				Logger.d(TAG, "P2p Service Destroy done~~~");
 			} catch (Exception ex) {
 
 			}
@@ -226,40 +233,39 @@ public class WifiP2pService extends Service implements ChannelListener,
 
 	public boolean discoverPeers() {
 		if (!isWifiP2pEnabled) {
-//			Toast.makeText(this, R.string.wifip2p_p2p_not_open, Toast.LENGTH_SHORT).show();
-			return false;
-		} else {
-			// do discoverPeers
-			mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-				@Override
-				public void onSuccess() {
-//					dismissProgressDialog();
-//					Toast.makeText(WifiP2pService.this, R.string.wifip2p_discovery_sucess, Toast.LENGTH_SHORT).show();
-				}
-
-				@Override
-				public void onFailure(int reasonCode) {
-//					Toast.makeText(WifiP2pService.this, String.format(getResources().getString(R.string.wifip2p_discovery_failed), reasonCode), Toast.LENGTH_SHORT).show();
-				}
-			});
-			
-			return true;
+			mWifiUtil.openWifi();
 		}
+		// do discoverPeers
+		mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+			@Override
+			public void onSuccess() {
+			}
+
+			@Override
+			public void onFailure(int reasonCode) {
+			}
+		});
+
+		return true;
 	}
 	
 	private void showProgressDialog(String action){
-		Intent intent = new Intent(this,DialogActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		intent.setAction(action);
-		startActivity(intent);
+		IShowDialog dialog = ((MainApplication)getApplication()).getDialogHolder();
+		if( dialog != null )dialog.showProgressDialog(action);
+//		Intent intent = new Intent(this,DialogActivity.class);
+//		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//		intent.setAction(action);
+//		startActivity(intent);
 	}
 	
 	private void dismissProgressDialog(){
 		Logger.d(TAG,"in service send dismissProgressDialog");
-		Intent intent = new Intent(this,DialogActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		intent.setAction("dismiss");
-		startActivity(intent);
+		IShowDialog dialog = ((MainApplication)getApplication()).getDialogHolder();
+		if( dialog != null )dialog.dismissProgressDialog();
+//		Intent intent = new Intent(this,DialogActivity.class);
+//		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//		intent.setAction("dismiss");
+//		startActivity(intent);
 	}
 
 	/***********************
@@ -272,6 +278,13 @@ public class WifiP2pService extends Service implements ChannelListener,
 	private void initEnvironment() {
 		// Get wifiP2p manager
 		mWifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+		// init wifi util
+		mWifiUtil = new WifiUtil(getApplicationContext());
+		// 
+		WifiManager manager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        mUdpHelper = new UdpHelper(manager);
+        Thread tReceived = new Thread(mUdpHelper);
+        tReceived.start();
 
 		// Init channel
 		mChannel = initialize(this, getMainLooper(), this);
@@ -280,6 +293,8 @@ public class WifiP2pService extends Service implements ChannelListener,
 		try {
 			mThreadPoolManager = new ThreadPoolManager(this,
 					WifiP2pConfigInfo.LISTEN_PORT, 5);
+			mThreadPoolManagerWifi = new ThreadPoolManagerWifi(this,
+					WifiP2pConfigInfo.WIFI_PORT, 5);
 		} catch (IOException ex) {
 			Logger.e("NetworkService", "onActivityCreated() IOException ex", ex);
 		}
@@ -301,11 +316,13 @@ public class WifiP2pService extends Service implements ChannelListener,
 	private void initServiceThread() {
 		Logger.d(TAG, "initServiceThread.");
 		mThreadPoolManager.init();
+		mThreadPoolManagerWifi.init();
 	}
 
 	private void uninitServiceThread() {
 		Logger.d(TAG, "uninitServiceThread.");
 		mThreadPoolManager.uninit();
+		mThreadPoolManagerWifi.uninit();
 	}
 
 
@@ -632,7 +649,7 @@ public class WifiP2pService extends Service implements ChannelListener,
 		Logger.d(TAG,"updateLocalDevice , device.status is :" + device.status);
 		mLocalDevice = device;
 		((MainApplication) getApplication()).setLocalDevice(device);
-
+/*
 		if (device.status == WifiP2pDevice.INVITED) {
 //			showProgressDialog("connect");
 		} else if (device.status != WifiP2pDevice.CONNECTED) {
@@ -665,6 +682,7 @@ public class WifiP2pService extends Service implements ChannelListener,
 			}
 			
 		}
+*/
 		// if (mActivity != null) {
 		// mActivity.updateLocalDevice(device);
 		// }

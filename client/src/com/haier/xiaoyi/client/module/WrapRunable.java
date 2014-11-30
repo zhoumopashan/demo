@@ -4,14 +4,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import android.net.Uri;
+import android.text.TextUtils;
 
 import com.haier.xiaoyi.client.XiaoYi;
 import com.haier.xiaoyi.client.controller.WifiP2pService;
 import com.haier.xiaoyi.client.util.Logger;
+import com.haier.xiaoyi.client.videochat.Constant;
 
 /**
  * Wrap all runnable
@@ -34,6 +40,10 @@ public class WrapRunable {
 
 	public static SendDeviceInfoRunnable getSendDeviceInfoRunnable(String ip , XiaoYi xiaoyi) {
 		return new SendDeviceInfoRunnable(ip ,xiaoyi);
+	}
+	
+	public static SendWifiInfoRunnable getSendWifiInfoRunnable(XiaoYi xiaoyi) {
+		return new SendWifiInfoRunnable(xiaoyi);
 	}
 
 	public static SendFileRunable getSendFileRunable(String host, int port, Uri uri, WifiP2pService netService) {
@@ -96,6 +106,50 @@ class SendDeviceInfoRunnable implements Runnable {
 		}
 	}
 }
+
+class SendWifiInfoRunnable implements Runnable {
+	private XiaoYi mDevice;
+	SendWifiInfoRunnable() {
+
+	}
+
+	SendWifiInfoRunnable(XiaoYi xiaoyi) {
+		mDevice = xiaoyi;
+	}
+
+	@Override
+	public void run() {
+		try {
+			send(mDevice.getWifiIp(), InetAddress.getByName("255.255.255.255") );
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void send(String msg, InetAddress destIp) {
+		// Log.d("====", "发送消息："+msg);
+		send(msg, destIp, WifiP2pConfigInfo.WIFI_PORT);
+	}
+	
+	public void send(final String msg, final InetAddress destIp, final int destPort) {
+		try {
+			DatagramPacket packet;
+			if(TextUtils.isEmpty(msg)){
+				packet = new DatagramPacket("hello".getBytes(Constant.ENCOD), "hello".length(), destIp, destPort);
+			}else{
+				packet = new DatagramPacket(msg.getBytes(Constant.ENCOD), msg.length(), destIp, destPort);
+			}
+			MulticastSocket  socket = new MulticastSocket(WifiP2pConfigInfo.WIFI_PORT);
+			socket.send(packet);
+//			socket.close();
+			Logger.d("SendWifiInfoRunnable","send a wifi broadcast");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Logger.d("SendWifiInfoRunnable","send success");
+	}
+}
+
 
 class SendPeerInfoRunable implements Runnable {
 	private PeerInfo peerInfo;

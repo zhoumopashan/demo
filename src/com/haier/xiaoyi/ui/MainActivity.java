@@ -28,10 +28,11 @@ import android.widget.Toast;
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.wifip2p.controller.IShowDialog;
 import com.haier.xiaoyi.wifip2p.controller.WifiP2pService;
 import com.haier.xiaoyi.wifip2p.module.WiFiPeerListAdapter;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+public class MainActivity extends Activity implements View.OnClickListener, IShowDialog {
 
 	/******************************
 	 * Macros <br>
@@ -103,7 +104,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 		initWindow();
 		initLayoutsAndViews();
 		
-//		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
+		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 	}
 	
 	@Override
@@ -228,6 +229,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
 	private void initEnvironment() {
 		((MainApplication)getApplication()).addActivity(this);
+		((MainApplication)getApplication()).setDialogHolder(this);
 	}
 
 	/**
@@ -235,6 +237,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 	 */
 	private void releaseEnvironment() {
 		((MainApplication)getApplication()).removeActivity(this);
+		((MainApplication)getApplication()).setDialogHolder(null);
 	}
 
 	private void initWindow() {
@@ -417,6 +420,30 @@ public class MainActivity extends Activity implements View.OnClickListener {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public void showProgressDialog(String action) {
+		if (mProgressDialog != null && mProgressDialog.isShowing()) {
+			mProgressDialog.dismiss();
+		}
+		mProgressDialog = ProgressDialog.show(this, getString(R.string.wifip2p_p2p_scanning_title), 
+				getString(R.string.wifip2p_p2p_scanning), true, true, 
+				new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel(DialogInterface dialog) {
+				Logger.d(TAG, "onCancel discovery cancel.");
+				finish();
+			}
+		});
+		mProgressDialog.setCancelable(false);		
+	}
+
+	@Override
+	public void dismissProgressDialog() {
+		if (mProgressDialog != null && mProgressDialog.isShowing()) {
+			mProgressDialog.dismiss();
+		}		
 	}
 
 }

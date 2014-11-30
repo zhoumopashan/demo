@@ -14,6 +14,7 @@ public class WifiP2pConfigInfo {
 	public static final int MSG_REPORT_RECV_PEER_LIST = 29;
 	public static final int MSG_REPORT_SEND_STREAM_RESULT = 30;
 	public static final int MSG_UPDATE_LOCAL_INFO = 31;
+	public static final int MSG_SERVICE_POOL_START_WIFI = 32;
 	
 
 	public static final int REQUEST_CODE_SELECT_IMAGE = 50;
@@ -42,9 +43,13 @@ public class WifiP2pConfigInfo {
 	public static final int COMMAND_ID_START_CLIENT_VIDEO = 220;
 	public static final int COMMAND_ID_STOP_CLIENT_VIDEO = 221;
 	
+	/**/
+	public static final int COMMAND_ID_SEND_WIFI = 222;
+	
 	/** About server Socket */
 	/** ServerSocket's Port */
 	public static final int LISTEN_PORT = 8988;
+	public static final int WIFI_PORT = 8989;
 	/** ServerSocket's Timeout */
     public static final int SOCKET_TIMEOUT = 5000;
 	

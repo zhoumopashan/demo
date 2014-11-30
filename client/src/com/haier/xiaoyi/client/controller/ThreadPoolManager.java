@@ -39,6 +39,8 @@ public class ThreadPoolManager extends HandlerThread {
 	/**  service */
 	private final WifiP2pService mP2pService;
 	
+	private volatile static boolean isWifiRegularCheck = false;
+	
 	public ThreadPoolManager(WifiP2pService service, int port, int poolSize)
 			throws IOException {
 		super(TAG, Process.THREAD_PRIORITY_FOREGROUND);
@@ -90,6 +92,12 @@ public class ThreadPoolManager extends HandlerThread {
 					}			
 				}
 				break;
+			case WifiP2pConfigInfo.MSG_REGULAR_WIFI:
+				Logger.d(TAG,"Check wifi regular");
+				if(isWifiRegularCheck){
+					this.sendEmptyMessageDelayed(WifiP2pConfigInfo.MSG_REGULAR_WIFI, 5000);
+				}
+				break;
 			default:
 				break;
 			}
@@ -111,6 +119,17 @@ public class ThreadPoolManager extends HandlerThread {
 		msg.what = WifiP2pConfigInfo.MSG_SERVICE_POOL_START;
 		getHandler().sendMessage(msg);
 	}
+	
+	public void startWifiRegularCheck(){
+		isWifiRegularCheck = true;
+		Message msg = new Message();
+		msg.what = WifiP2pConfigInfo.MSG_REGULAR_WIFI;
+		getHandler().sendMessage(msg);
+	}
+	
+	public void stopWifiRegularCheck(){
+		isWifiRegularCheck = false;
+	}
 
 	/**
 	 * UnInit
@@ -118,6 +137,7 @@ public class ThreadPoolManager extends HandlerThread {
 	public void uninit() {
 		Logger.d(this.getName(), "uninit");
 		setServiceRun(false);
+		stopWifiRegularCheck();
 	}
 	
 	/**
@@ -236,6 +256,9 @@ class HandleAcceptSocket implements Runnable {
 			}
 			else if( iCommand == WifiP2pConfigInfo.COMMAND_ID_CLOSE_CLOCK){
 				mService.handleRecvCloseClock(ins);
+			}
+			else if( iCommand == WifiP2pConfigInfo.COMMAND_ID_SEND_WIFI ){
+				mService.handleRecvWifi(ins);
 			}
 			
 			ins.close();

@@ -19,6 +19,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
@@ -38,8 +39,9 @@ import com.haier.xiaoyi.client.module.PeerInfo;
 import com.haier.xiaoyi.client.module.WifiP2pConfigInfo;
 import com.haier.xiaoyi.client.module.WrapRunable;
 import com.haier.xiaoyi.client.ui.ClockActivity;
-import com.haier.xiaoyi.client.util.CrashHandler;
 import com.haier.xiaoyi.client.util.Logger;
+import com.haier.xiaoyi.client.util.UdpHelper;
+import com.haier.xiaoyi.client.util.WifiUtil;
 
 /**********************
  *   Main interface
@@ -69,9 +71,13 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	/** @see android.net.wifi.p2p.WifiP2pManager.Channel */
 	private Channel mChannel = null;
 	private WifiP2pDevice mLocalDevice = null;
+	private WifiUtil mWifiUtil = null;
+	//
+	private UdpHelper mUdpHelper = null;
 
 	/** WifiP2p BroadcastReceiver */
 	private BroadcastReceiver mWifiP2pReceiver = null;
+	private AlarmManager mAlarm = null;
 	private final IntentFilter intentFilter = new IntentFilter();
 
 	/** The p2p device's list */
@@ -151,6 +157,10 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			// sendPhoto();
 		} else if (action.equals("discover_peers")) {
 			discoverPeers();
+		} else if(action.equals("wifi_connect")){
+			updateWifiState(intent);
+		} else if(action.equals("wifi_disconnect")){
+			disableWifiState();
 		}
 
 		return START_STICKY;
@@ -203,37 +213,29 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	 *********************/
 
 	public boolean discoverPeers() {
-		if (((MainApplication) getApplication()).getUiListener() != null) {
-			if (!isWifiP2pEnabled) {
-				// Toast.makeText(this, R.string.wifip2p_p2p_not_open,
-				// Toast.LENGTH_SHORT).show();
-			} else {
-				// callback activity
-				((MainApplication) getApplication()).getUiListener().showDiscoverPeers();
-				// do discoverPeers
-				mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-					@Override
-					public void onSuccess() {
-						// Toast.makeText(WifiP2pService.this,
-						// R.string.wifip2p_discovery_sucess,
-						// Toast.LENGTH_SHORT).show();
-					}
-
-					@Override
-					public void onFailure(int reasonCode) {
-						// Toast.makeText(WifiP2pService.this,
-						// String.format(getResources().getString(R.string.wifip2p_discovery_failed),
-						// reasonCode),
-						// Toast.LENGTH_SHORT).show();
-					}
-				});
-				return true;
-			}
+		if (!isWifiP2pEnabled) {
+			mWifiUtil.openWifi();
 		}
+		
+		mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
+			@Override
+			public void onSuccess() {
+			}
+
+			@Override
+			public void onFailure(int reasonCode) {
+			}
+		});
+		
+		// Update UI
+		if (((MainApplication) getApplication()).getUiListener() != null) {
+			((MainApplication) getApplication()).getUiListener().showDiscoverPeers();
+			return true;
+		}
+		
 		return false;
-
 	}
-
+	
 	/***********************
 	 * Private Methods
 	 *********************/
@@ -248,6 +250,13 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
         
 		// Get wifiP2p manager
 		mWifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+		mWifiUtil = new WifiUtil(getApplicationContext());
+		// 
+		WifiManager manager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        mUdpHelper = new UdpHelper(manager);
+        Thread tReceived = new Thread(mUdpHelper);
+        tReceived.start();
+        startRegularCheck();
 
 		// Init channel
 		mChannel = initialize(this, getMainLooper(), this);
@@ -274,14 +283,22 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	private void startRegularCheck() {
 		Logger.d(TAG, "startRegularCheck");
 		PendingIntent sender = PendingIntent.getBroadcast(this, 0, new Intent("regular_jobs"), 0);
-		AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
-		alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, sender);
+		mAlarm = (AlarmManager) getSystemService(ALARM_SERVICE);
+		mAlarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 5000, sender);
 	}
 
 	public void doRegularJobs() {
-		// Logger.d(TAG,"do it regular!");
-		discoverPeers();
-		getDeviceInfo();
+		Logger.d(TAG,"do it regular!");
+//		discoverPeers();
+//		getDeviceInfo();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				mUdpHelper.send("luo");				
+			}
+		}).start();
+		
+//		mThreadPoolManager.execute(WrapRunable.getSendWifiInfoRunnable(((MainApplication) getApplication()).getXiaoyi()));
 	}
 
 	private void getDeviceInfo() {
@@ -726,6 +743,43 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			Logger.e(TAG, e.getMessage());
 		}
 	}
+	
+	public void handleRecvWifi(InputStream ins){
+		try {
+			String strBuffer = "";
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = ins.read(buffer)) != -1) {
+				strBuffer = strBuffer + new String(buffer, 0, len);
+			}
+
+			int offset1 = strBuffer.indexOf("xiaoyissid:");
+			int offset2 = strBuffer.indexOf("xiaoyisspsw:");
+			String ssid , psw ;
+			Logger.d(TAG, "recvPeerSockAddr strBuffer:" + strBuffer);
+
+			if (offset1 != -1 && offset2 != -1) {
+				ssid = strBuffer.substring(offset1 + 11, offset2);
+				psw = strBuffer.substring(offset2 + 12, strBuffer.length());
+				
+				mWifiUtil.openWifi();
+				mWifiUtil.getScanResult();
+				mWifiUtil.connectNetwork( ssid , psw );
+				
+				WifiP2pActivityListener activity = ((MainApplication) getApplication()).getUiListener();
+				if (activity != null) {
+					activity.printfmsg(" -------------------   Set a wifi  -------------");
+					activity.printfmsg("Ssid is set to : " + ssid);
+					activity.printfmsg("Psw is set to : " + psw);
+					activity.printfmsg("\n");
+				}
+			}
+
+
+		} catch (IOException e) {
+			Logger.e(TAG, e.getMessage());
+		}
+	}
 
 	/**
 	 * After the network reConnect, a group owner send broadcast <br>
@@ -870,5 +924,23 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
             default:
                 return "Unknown";
         }
+    }
+    
+    /*******************************
+     * wifi  module
+     */
+    private void updateWifiState(Intent intent){
+    	String ip = intent.getStringExtra("wifi_ip");
+    	((MainApplication) getApplication()).getXiaoyi().setWifiIp(ip);
+    	((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(true);
+    	startRegularCheck();
+//    	mThreadPoolManager.startWifiRegularCheck();
+    }
+    private void disableWifiState(){
+    	((MainApplication) getApplication()).getXiaoyi().setWifiIp(null);
+    	((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(false);
+    	PendingIntent sender = PendingIntent.getBroadcast(this, 0, new Intent("regular_jobs"), 0);
+    	if(mAlarm != null)  mAlarm.cancel(sender);
+//    	mThreadPoolManager.stopWifiRegularCheck();
     }
 }
