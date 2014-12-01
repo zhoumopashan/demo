@@ -15,6 +15,8 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -32,6 +34,7 @@ import android.net.wifi.p2p.WifiP2pManager.ChannelListener;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.haier.xiaoyi.client.MainApplication;
@@ -714,6 +717,73 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			AlarmManager alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
 			alarm.setRepeating(AlarmManager.RTC_WAKEUP, clockTimeLong, 1000 * 60 * 24, sender);
 			// alarm.set(AlarmManager.RTC_WAKEUP, clockTimeLong, sender);
+
+			return true;
+		} catch (IOException e) {
+			Logger.e(TAG, e.getMessage());
+			return false;
+		}
+	}
+	
+	/** handle receive clock */
+	public boolean handleRecvXiaoyiName(InputStream ins,int cmd) {
+		try {
+			String strBuffer = "";
+
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = ins.read(buffer)) != -1) {
+				strBuffer = strBuffer + new String(buffer, 0, len);
+			}
+			Logger.d(TAG, "xiaoyi's name is:" + strBuffer);
+			
+			ContentResolver cr = getContentResolver();
+    		ContentValues values = new ContentValues();
+			if(cmd == WifiP2pConfigInfo.COMMAND_ID_XIAOYI_NAME){
+	    		values.put("COLUMN_XIAOYI_NAME", strBuffer);
+	    	    cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+			}else{
+	    		values.put("COLUMN_XIAOYI_AGE", strBuffer);
+	    	    cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+			}
+
+
+			return true;
+		} catch (IOException e) {
+			Logger.e(TAG, e.getMessage());
+			return false;
+		}
+	}
+	
+	
+	/** handle receive Date */
+	public boolean handleRecvDate(InputStream ins) {
+		try {
+			int yearH = ins.read();
+			int yearL = ins.read();
+			int year = yearH * 100 + yearL;
+			int month = ins.read();
+			int date = ins.read();
+			int hour = ins.read();
+			int minute = ins.read();
+			
+			Logger.d(TAG,"year:" + year);
+			Logger.d(TAG,"month:" + month);
+			Logger.d(TAG,"date:" + date);
+			Logger.d(TAG,"hour:" + hour);
+			Logger.d(TAG,"minute" + minute);
+
+			Calendar clockTime = Calendar.getInstance();
+			clockTime.setTime(new Date());
+			clockTime.set(Calendar.YEAR, year);
+			clockTime.set(Calendar.MONTH, month);
+			clockTime.set(Calendar.DATE, date);
+			clockTime.set(Calendar.HOUR_OF_DAY, hour);
+			clockTime.set(Calendar.MINUTE, minute);
+			long clockTimeLong = clockTime.getTimeInMillis();
+			Logger.d(TAG,"currentTime" + System.currentTimeMillis());
+			Logger.d(TAG,"clockTimeLong" + clockTimeLong);
+			SystemClock.setCurrentTimeMillis(clockTimeLong);
 
 			return true;
 		} catch (IOException e) {

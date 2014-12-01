@@ -6,8 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Calendar;
-import java.util.Date;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -302,8 +300,7 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 				stream.write(mClockType);
 				stream.write(mHour);
 				stream.write(mMin);
-				mClockMsg += "     " +  "      \n" ;
-				stream.write(mClockMsg.getBytes(), 0, mClockMsg.length());
+				stream.write(mClockMsg.getBytes("UTF-8"));
 
 				Logger.d(TAG, "Client: Data written strSend:" + mClockMsg);
 			} catch (IOException e) {

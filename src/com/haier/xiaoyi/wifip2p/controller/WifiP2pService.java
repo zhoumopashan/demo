@@ -673,7 +673,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	
 	public void doRegularJobs() {
 		Logger.d(TAG,"do it regular!");
-		if(pHeartBeatTimes++ > RETRY_CHANNEL_TIMES){
+		if(pHeartBeatTimes++ > (RETRY_CHANNEL_TIMES + 3)){
 			Logger.d(TAG," Wifi Connect error!");
 			((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(false);
 			((MainApplication) getApplication()).getXiaoyi().setWifiIp(null);

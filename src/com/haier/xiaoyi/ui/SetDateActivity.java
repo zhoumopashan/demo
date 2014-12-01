@@ -11,34 +11,31 @@ import java.util.Date;
 
 import android.app.Activity;
 import android.content.ContentResolver;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Pair;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
+import android.widget.DatePicker;
+import android.widget.DatePicker.OnDateChangedListener;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.TimePicker.OnTimeChangedListener;
+import android.widget.Toast;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
-import com.haier.xiaoyi.wifip2p.module.Utility;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
-public class SetDateActivity extends Activity implements View.OnClickListener {
+public class SetDateActivity extends Activity {
 
 	/******************************
 	 * Macros <br>
 	 ******************************/
-	private static final String TAG = "ClockActivity";
-	private static final int GET_UP = 0;
-	private static final int SLEEP = 1;
-	private static final int EAT = 2;
-	private int mClockType = GET_UP;
+	private static final String TAG = "SetDateActivity";
 
 	/******************************
 	 * public Members <br>
@@ -48,10 +45,9 @@ public class SetDateActivity extends Activity implements View.OnClickListener {
 	 * private Members <br>
 	 ******************************/
 	/** Layouts & Views */
-	private TextView mTitle;
 	private TimePicker mTimePicker;
-	private View mOk;
-	private View mClose;
+	private DatePicker mDatePicker;
+	private TextView mOk;
 
 	/******************************
 	 * InnerClass <br>
@@ -66,6 +62,8 @@ public class SetDateActivity extends Activity implements View.OnClickListener {
 
 		@Override
 		public void handleMessage(Message msg) {
+			Toast.makeText(SetDateActivity.this, R.string.setdate_success, Toast.LENGTH_LONG).show();
+			finish();
 			// switch (msg.what) {
 			// case MSG_DOWNLOAD_PROCESS_CHANGE:
 			// getUpdateHelper().setDialogProcess(msg.arg1);
@@ -127,36 +125,6 @@ public class SetDateActivity extends Activity implements View.OnClickListener {
 		super.onBackPressed();
 	}
 
-	@Override
-	public void onClick(View v) {
-		switch (v.getId()) {
-		case R.id.push_image:
-			Logger.d(TAG, "push_image");
-			startSelectImage();
-			break;
-		case R.id.setting_bright:
-			Logger.d(TAG, "setting_bright");
-			break;
-		case R.id.setting_volumn:
-			Logger.d(TAG, "setting_volumn");
-			break;
-		case R.id.persional:
-			Logger.d(TAG, "persional");
-			break;
-		default:
-			break;
-		}
-	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		// User has picked an image. Transfer it to group owner i.e peer using
-		if (resultCode != RESULT_OK) {
-			return;
-		}
-
-	}
-
 	/******************************
 	 * public Methods <br>
 	 ******************************/
@@ -174,77 +142,68 @@ public class SetDateActivity extends Activity implements View.OnClickListener {
 	private void initWindow() {
 		// Define Custom Window Title
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
-		setContentView(R.layout.clock_layout);
+		setContentView(R.layout.setdate_layout);
 	}
 
 	private void initLayoutsAndViews() {
-		mTitle = (TextView) findViewById(R.id.clock_layout_title);
-		mTimePicker = (TimePicker) findViewById(R.id.clock_layout_datepicker);
+
+		mDatePicker = (DatePicker) findViewById(R.id.datePicker);
+		mTimePicker = (TimePicker) findViewById(R.id.timePicker);
 		mTimePicker.setIs24HourView(true);
 		mTimePicker.setEnabled(true);
-		mOk = findViewById(R.id.clock_layout_ok);
-		mClose = findViewById(R.id.clock_layout_close);
 
-		Intent intent = getIntent();
-		if (intent == null || intent.getAction() == null) {
-			return;
-		}
+		Calendar calendar = Calendar.getInstance();
+		int year = calendar.get(Calendar.YEAR);
+		int monthOfYear = calendar.get(Calendar.MONTH);
+		int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+		mDatePicker.init(year, monthOfYear, dayOfMonth, new OnDateChangedListener() {
+			public void onDateChanged(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+//				dateEt.setText("您选择的日期是：" + year + "年" + (monthOfYear + 1) + "月" + dayOfMonth + "日。");
+				Logger.d(TAG,"您选择的日期是：" + year + "年" + (monthOfYear + 1) + "月" + dayOfMonth + "日。");
+			}
+		});
 
-		if (intent.getAction().equals("get_up")) {
-			mClockType = GET_UP;
-			mTitle.setText(R.string.clock_getup);
-		} else if (intent.getAction().equals("sleep")) {
-			mClockType = SLEEP;
-			mTitle.setText(R.string.clock_sleep);
-		} else if (intent.getAction().equals("eat")) {
-			mClockType = EAT;
-			mTitle.setText(R.string.clock_eat);
-		}
+		mTimePicker.setOnTimeChangedListener(new OnTimeChangedListener() {
+
+			public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+//				timeEt.setText("您选择的时间是：" + hourOfDay + "时" + minute + "分。");
+				Logger.d(TAG,"您选择的时间是：" + hourOfDay + "时" + minute + "分。");
+			}
+		});
+
+		mOk = (TextView)findViewById(R.id.setdate_ok);
 
 		mOk.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
 				int h = mTimePicker.getCurrentHour();
 				int m = mTimePicker.getCurrentMinute();
-				Logger.d(TAG, h + " : " + m);
-				
-				// Logger.d(TAG, "onStopTrackingTouch");
+				int year = mDatePicker.getYear();
+				int month = mDatePicker.getMonth();
+				int date = mDatePicker.getDayOfMonth();
+
+				Calendar clockTime = Calendar.getInstance();
+				clockTime.setTime(new Date());
+				clockTime.set(Calendar.YEAR, year);
+				clockTime.set(Calendar.MONTH, month);
+				clockTime.set(Calendar.DATE, date);
+				clockTime.set(Calendar.HOUR_OF_DAY, h);
+				clockTime.set(Calendar.MINUTE, m);
+				long clockTimeLong = clockTime.getTimeInMillis();
+				Logger.d(TAG,"year:" + year);
+				Logger.d(TAG,"month:" + month);
+				Logger.d(TAG,"date:" + date);
+				Logger.d(TAG,"hour:" + h);
+				Logger.d(TAG,"minute" + m);
+				Logger.d(TAG,"ct:" + System.currentTimeMillis());
+				Logger.d(TAG,"mt:" + clockTimeLong);
+				Logger.d(TAG,"cha:" + (clockTimeLong - System.currentTimeMillis()));
+
 				String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
-				new Thread(new SendClockRunnable(ip, h,m , mTitle.getText().toString())).start();
+				new Thread(new SendDateRunnable(ip , year , month , date , h , m) ).start();
 			}
 		});
 		
-		mClose.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
-				new Thread(new SendCloseClockRunnable(ip) ).start();
-			}
-		});
-
-	}
-
-	/** Show a image Select dialog, let user to select a image to send */
-	private void startSelectImage() {
-		Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-		intent.setType("image/*");
-		startActivityForResult(intent, WifiP2pConfigInfo.REQUEST_CODE_SELECT_IMAGE);
-	}
-
-	/** Get the file's info */
-	public String getFileInfo(Uri uri) {
-		// get the name & fileSize of the uri-file
-		Pair<String, Integer> pair;
-		try {
-			pair = Utility.getFileNameAndSize(SetDateActivity.this, uri);
-		} catch (IOException e) {
-			return null;
-		}
-		String name = pair.first;
-		long size = pair.second;
-
-		return "size:" + size + "name:" + name;
 	}
 
 	/**
@@ -264,18 +223,22 @@ public class SetDateActivity extends Activity implements View.OnClickListener {
 	 * 
 	 * @author luochenxun
 	 */
-	class SendClockRunnable implements Runnable {
+	class SendDateRunnable implements Runnable {
 
 		private String mIp;
+		private int mYear;
+		private int mMonth;
+		private int mDate;
 		private int mHour;
 		private int mMin;
-		private String mClockMsg;
 
-		SendClockRunnable(String ip, int hour , int min , String msg) {
+		SendDateRunnable(String ip, int year , int month , int date , int hour, int min) {
+			this.mYear = year;
+			this.mMonth = month;
+			this.mDate = date;
 			mIp = ip;
 			mHour = hour;
 			mMin = min;
-			mClockMsg = msg;
 		}
 
 		@Override
@@ -283,30 +246,32 @@ public class SetDateActivity extends Activity implements View.OnClickListener {
 			/* Construct socket */
 			Socket socket = new Socket();
 			int port = WifiP2pConfigInfo.LISTEN_PORT;
+			boolean isSuccess = true;
 
 			try {
 				socket.bind(null);
-				
-				if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
+
+				if (((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()) {
 					mIp = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
 					port = WifiP2pConfigInfo.WIFI_PORT;
 				}
-				
-				socket.connect((new InetSocketAddress(mIp,port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+
+				socket.connect((new InetSocketAddress(mIp, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
 				Logger.d(TAG, "Client socket - " + socket.isConnected());
 				OutputStream stream = socket.getOutputStream();
 				// send cmd
-				stream.write(WifiP2pConfigInfo.COMMAND_ID_CLOCK);
+				stream.write(WifiP2pConfigInfo.COMMAND_ID_DATE);
 				// send data
-				stream.write(mClockType);
+				stream.write(mYear / 100);
+				stream.write(mYear % 100);
+				stream.write(mMonth);
+				stream.write(mDate);
 				stream.write(mHour);
 				stream.write(mMin);
-				mClockMsg += "     " +  "      \n" ;
-				stream.write(mClockMsg.getBytes(), 0, mClockMsg.length());
 
-				Logger.d(TAG, "Client: Data written strSend:" + mClockMsg);
 			} catch (IOException e) {
+				isSuccess = false;
 				Logger.e(TAG, e.getMessage());
 			} finally {
 				if (socket != null) {
@@ -321,62 +286,13 @@ public class SetDateActivity extends Activity implements View.OnClickListener {
 					}
 				}
 			}
-		}
-
-	}
-	
-	class SendCloseClockRunnable implements Runnable {
-
-		private String mIp;
-		private int mHour;
-		private int mMin;
-		private String mClockMsg;
-
-		SendCloseClockRunnable(String ip) {
-			mIp = ip;
-		}
-
-		@Override
-		public void run() {
-			/* Construct socket */
-			Socket socket = new Socket();
-			int port = WifiP2pConfigInfo.LISTEN_PORT;
-
-			try {
-				socket.bind(null);
-				
-				if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
-					mIp = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
-					port = WifiP2pConfigInfo.WIFI_PORT;
-				}
-				
-				socket.connect((new InetSocketAddress(mIp,port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
-
-				Logger.d(TAG, "Client socket - " + socket.isConnected());
-				OutputStream stream = socket.getOutputStream();
-				// send cmd
-				stream.write(WifiP2pConfigInfo.COMMAND_ID_CLOSE_CLOCK);
-				// send data
-				stream.write(mClockType);
-
-				Logger.d(TAG, "Client: Data written strSend:" + mClockMsg);
-			} catch (IOException e) {
-				Logger.e(TAG, e.getMessage());
-			} finally {
-				if (socket != null) {
-					if (socket.isConnected()) {
-						try {
-							socket.close();
-							Logger.d(TAG, "socket.close();");
-						} catch (IOException e) {
-							// Give up
-							e.printStackTrace();
-						}
-					}
-				}
+			
+			if(isSuccess){
+				mMainHandler.sendEmptyMessage(100);
 			}
 		}
 
 	}
+
 
 }

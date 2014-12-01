@@ -79,6 +79,14 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name=".ui.XiaoyiActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".ui.SetDateActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
             android:name=".videochat.VideoChat"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" >

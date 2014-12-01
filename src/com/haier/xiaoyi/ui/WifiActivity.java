@@ -22,6 +22,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
@@ -63,6 +64,8 @@ public class WifiActivity extends Activity implements View.OnClickListener {
 
 		@Override
 		public void handleMessage(Message msg) {
+			Toast.makeText(WifiActivity.this, R.string.setdate_success, Toast.LENGTH_LONG).show();
+			finish();
 //			switch (msg.what) {
 //			case MSG_SHOWDIALOG:
 //				break;
@@ -225,6 +228,7 @@ public class WifiActivity extends Activity implements View.OnClickListener {
 		public void run() {
 			/* Construct socket */
 			Socket socket = new Socket();
+			boolean isSuccess = true;
 
 			try {
 				socket.bind(null);
@@ -240,6 +244,7 @@ public class WifiActivity extends Activity implements View.OnClickListener {
 
 				Logger.d(TAG, "Client: Data written strSend:" + strSend);
 			} catch (IOException e) {
+				isSuccess = false;
 				Logger.e(TAG, e.getMessage());
 			} finally {
 				if (socket != null) {
@@ -253,6 +258,10 @@ public class WifiActivity extends Activity implements View.OnClickListener {
 						}
 					}
 				}
+			}
+			
+			if(isSuccess){
+				mMainHandler.sendEmptyMessage(100);
 			}
 		}
 

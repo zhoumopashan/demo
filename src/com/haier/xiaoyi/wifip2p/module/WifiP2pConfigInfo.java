@@ -38,6 +38,9 @@ public class WifiP2pConfigInfo {
 	/**  **/
 	public static final int COMMAND_ID_CLOCK = 205;
 	public static final int COMMAND_ID_CLOSE_CLOCK = 206;
+	public static final int COMMAND_ID_DATE = 207;
+	public static final int COMMAND_ID_XIAOYI_NAME = 208;
+	public static final int COMMAND_ID_XIAOYI_AGE = 209;
 	
 	/**  */
 	public static final int COMMAND_ID_START_CLIENT_VIDEO = 220;

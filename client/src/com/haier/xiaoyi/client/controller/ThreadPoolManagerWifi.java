@@ -243,6 +243,15 @@ class HandleWifiAcceptSocket implements Runnable {
 			else if( iCommand == WifiP2pConfigInfo.COMMAND_ID_SEND_WIFI ){
 				mService.handleRecvWifi(ins);
 			}
+			else if(  iCommand == WifiP2pConfigInfo.COMMAND_ID_DATE ){
+				mService.handleRecvDate(ins);
+			}
+			else if(  iCommand == WifiP2pConfigInfo.COMMAND_ID_XIAOYI_NAME ){
+				mService.handleRecvXiaoyiName(ins,WifiP2pConfigInfo.COMMAND_ID_XIAOYI_NAME);
+			}
+			else if(  iCommand == WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE ){
+				mService.handleRecvXiaoyiName(ins,WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE);
+			}
 			
 			ins.close();
 		} catch (IOException e) {

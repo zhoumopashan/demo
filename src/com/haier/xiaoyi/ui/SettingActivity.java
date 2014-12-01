@@ -120,6 +120,7 @@ public class SettingActivity extends Activity implements View.OnClickListener {
 			startActivity(new Intent(this,WifiActivity.class));
 			break;
 		case R.id.setting2:
+			startActivity(new Intent(this,SetDateActivity.class));
 			Logger.d(TAG, "setting2_btn");
 			break;
 		case R.id.setting3:
@@ -127,6 +128,7 @@ public class SettingActivity extends Activity implements View.OnClickListener {
 			startActivity(new Intent(this,SleepActivity.class));
 			break;
 		case R.id.setting4:
+			startActivity(new Intent(this,XiaoyiActivity.class));
 			Logger.d(TAG, "setting4_btn");
 			break;
 		default:
