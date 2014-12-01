@@ -50,5 +50,6 @@
 
     <!-- tips -->
     <string name="dialog_exit_app">您真的要退出程序吗？</string>
+    <string name="already_login_wifi">已登录网络</string>
 
 </resources>

@@ -12,6 +12,8 @@ public class XiaoYi {
 	private WifiP2pInfo mWifiP2pInfo;
 	private String mHostIp = null;
 	private Uri mPhotoUri = null;
+	private String mWifiIp = null;
+	private boolean isWifiAvailable = false;
 
 	public int getVolice() {
 		return mVolice;
@@ -67,5 +69,21 @@ public class XiaoYi {
 
 	public void setPhotoUri(Uri mPhotoUri) {
 		this.mPhotoUri = mPhotoUri;
+	}
+
+	public String getWifiIp() {
+		return mWifiIp;
+	}
+
+	public void setWifiIp(String mWifiIp) {
+		this.mWifiIp = mWifiIp;
+	}
+
+	public boolean isWifiAvailable() {
+		return isWifiAvailable;
+	}
+
+	public void setWifiAvailable(boolean isWifiAvailable) {
+		this.isWifiAvailable = isWifiAvailable;
 	}
 }

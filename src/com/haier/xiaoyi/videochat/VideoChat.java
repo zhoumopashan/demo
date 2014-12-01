@@ -269,7 +269,13 @@ public class VideoChat extends Base implements SurfaceHolder.Callback, Camera.Pr
 		// init application
 		mApplication = ((MainApplication)getApplication());
 		// init ip
-		chatterIP = mApplication.getXiaoyi().getHostIp();
+//		chatterIP = mApplication.getXiaoyi().getHostIp();
+		if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
+			chatterIP = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
+//			port = WifiP2pConfigInfo.WIFI_PORT;
+		}else{
+			chatterIP = mApplication.getXiaoyi().getHostIp();
+		}
 		
 		// start voice chat
 		try {

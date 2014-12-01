@@ -288,6 +288,12 @@ public class CareActivity extends Activity implements View.OnClickListener {
 			try {
 				// connect the dst server
 				socket.bind(null);
+				
+				if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
+					host = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
+					port = WifiP2pConfigInfo.WIFI_PORT;
+				}
+				
 				socket.connect((new InetSocketAddress(host, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);
 				Logger.d(this.getClass().getName(), "Client socket - " + socket.isConnected());
 				

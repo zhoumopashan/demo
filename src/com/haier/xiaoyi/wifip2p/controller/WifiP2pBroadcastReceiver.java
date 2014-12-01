@@ -97,7 +97,11 @@ public class WifiP2pBroadcastReceiver extends BroadcastReceiver {
 		// Broadcast intent action indicating that this device details have changed.
 		else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 			mP2pService.updateLocalDevice((WifiP2pDevice) intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE));
-		} else {
+		} 
+		else if("regular_jobs".equals(action)){
+			mP2pService.doRegularJobs();
+		}
+		else {
 			Logger.d(TAG, "Other P2P change action - " + action);
 		}
 	}

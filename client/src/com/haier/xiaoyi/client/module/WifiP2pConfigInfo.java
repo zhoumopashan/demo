@@ -16,6 +16,7 @@ public class WifiP2pConfigInfo {
 	public static final int MSG_UPDATE_LOCAL_INFO = 31;
 	public static final int MSG_PRINT_MSG = 32;
 	public static final int MSG_REGULAR_WIFI = 33;
+	public static final int MSG_SERVICE_POOL_START_WIFI = 34;
 	
 
 	public static final int REQUEST_CODE_SELECT_IMAGE = 50;

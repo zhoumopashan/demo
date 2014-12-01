@@ -26,9 +26,9 @@ import com.haier.xiaoyi.client.videochat.VideoChat;
  * @author luochenxun
  *
  */
-public class ThreadPoolManager extends HandlerThread {
+public class ThreadPoolManagerWifi extends HandlerThread {
 	
-	private final static String TAG = "ServiceThread";
+	private final static String TAG = "ThreadPoolManagerWifi";
 	
 	/**  The socketServer */
 	private final ServerSocket mServer;
@@ -39,9 +39,7 @@ public class ThreadPoolManager extends HandlerThread {
 	/**  service */
 	private final WifiP2pService mP2pService;
 	
-	private volatile static boolean isWifiRegularCheck = false;
-	
-	public ThreadPoolManager(WifiP2pService service, int port, int poolSize)
+	public ThreadPoolManagerWifi(WifiP2pService service, int port, int poolSize)
 			throws IOException {
 		super(TAG, Process.THREAD_PRIORITY_FOREGROUND);
 		
@@ -49,7 +47,7 @@ public class ThreadPoolManager extends HandlerThread {
 		this.mP2pService = service;
 		mServer = new ServerSocket(port);
 		mThreadPool = Executors.newFixedThreadPool(poolSize);
-		Logger.d(TAG, "ThreadPoolManager Constructor ...");
+		Logger.d(TAG, "ThreadPoolManagerWifi Constructor ...");
 	}
 	
 	private boolean isServiceRun = true;
@@ -68,9 +66,9 @@ public class ThreadPoolManager extends HandlerThread {
 		return mHandler;
 	}
 	static private class ServiceThreadHandler extends Handler {
-		private ThreadPoolManager sThread;
+		private ThreadPoolManagerWifi sThread;
 		
-		ServiceThreadHandler(ThreadPoolManager service) {
+		ServiceThreadHandler(ThreadPoolManagerWifi service) {
 			super(service.getLooper());
 			this.sThread = service;
 		}
@@ -79,23 +77,18 @@ public class ThreadPoolManager extends HandlerThread {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-			case WifiP2pConfigInfo.MSG_SERVICE_POOL_START:
+			case WifiP2pConfigInfo.MSG_SERVICE_POOL_START_WIFI:
 				while (sThread.isServiceRun()) {
 					try {
-						Logger.d(TAG, "run ...");
+						Logger.d(TAG, "continue run ...");
 						Socket sock = sThread.mServer.accept();
-						sThread.mThreadPool.execute(new HandleAcceptSocket(sThread.mP2pService, sock));
+						Logger.d(TAG, "run accept one ~");
+						sThread.mThreadPool.execute(new HandleWifiAcceptSocket(sThread.mP2pService, sock));
 					} catch (Exception ex) {
 						Logger.e(TAG, "Exception ex:" + ex);
 						sThread.mThreadPool.shutdown();
 						break;
 					}			
-				}
-				break;
-			case WifiP2pConfigInfo.MSG_REGULAR_WIFI:
-				Logger.d(TAG,"Check wifi regular");
-				if(isWifiRegularCheck){
-					this.sendEmptyMessageDelayed(WifiP2pConfigInfo.MSG_REGULAR_WIFI, 5000);
 				}
 				break;
 			default:
@@ -109,35 +102,23 @@ public class ThreadPoolManager extends HandlerThread {
 	 * Init the ThreadHandler
 	 */
 	public void init() {
-		Logger.d(this.getName(), "init - isAlive " + isAlive());
+		Logger.d(TAG, "init - isAlive " + isAlive());
 		setServiceRun(true);
 		if (!this.isAlive()) {
 			this.start();
 			mHandler = new ServiceThreadHandler(this);
 		}
 		Message msg = new Message();
-		msg.what = WifiP2pConfigInfo.MSG_SERVICE_POOL_START;
+		msg.what = WifiP2pConfigInfo.MSG_SERVICE_POOL_START_WIFI;
 		getHandler().sendMessage(msg);
-	}
-	
-	public void startWifiRegularCheck(){
-		isWifiRegularCheck = true;
-		Message msg = new Message();
-		msg.what = WifiP2pConfigInfo.MSG_REGULAR_WIFI;
-		getHandler().sendMessage(msg);
-	}
-	
-	public void stopWifiRegularCheck(){
-		isWifiRegularCheck = false;
 	}
 
 	/**
 	 * UnInit
 	 */
 	public void uninit() {
-		Logger.d(this.getName(), "uninit");
+		Logger.d(TAG, "uninit");
 		setServiceRun(false);
-		stopWifiRegularCheck();
 	}
 	
 	/**
@@ -191,12 +172,12 @@ public class ThreadPoolManager extends HandlerThread {
  * 
  * @author luochenxun
  */
-class HandleAcceptSocket implements Runnable {
+class HandleWifiAcceptSocket implements Runnable {
 	private final Socket socket;
 	private final WifiP2pService mService;
 	private static final ReentrantLock lockRecvFile = new ReentrantLock();
 
-	HandleAcceptSocket(WifiP2pService service, Socket socket) {
+	HandleWifiAcceptSocket(WifiP2pService service, Socket socket) {
 		this.mService = service;
 		this.socket = socket;
 	}
@@ -211,7 +192,7 @@ class HandleAcceptSocket implements Runnable {
 			}
 		}
 	}
-	
+
 	public void run() {
 		// read and service request on socket
 		SocketAddress sockAddr = socket.getRemoteSocketAddress();
@@ -226,6 +207,7 @@ class HandleAcceptSocket implements Runnable {
 				mService.handleRecvPeerInfo(ins);
 			} 
 			else if (iCommand == WifiP2pConfigInfo.COMMAND_ID_SEND_FILE) {
+				Logger.d(this.getClass().getName(), "receive a file!");
 				lockRecvFile.lock();
 				try {
 					mService.setRemoteSockAddress(sockAddr);

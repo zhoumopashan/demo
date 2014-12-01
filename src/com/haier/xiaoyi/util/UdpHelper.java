@@ -7,21 +7,23 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import com.haier.xiaoyi.wifip2p.controller.WifiP2pService;
+
 import android.net.wifi.WifiManager;
 
 /**
- * 
- * UdpHelper帮助类
- * 
- * @author 陈喆榕
  * 
  */
 public class UdpHelper implements Runnable {
 	public Boolean IsThreadDisable = false;// 指示监听线程是否终止
 	private static WifiManager.MulticastLock lock;
 	InetAddress mInetAddress;
+	
+	/**  service */
+	private final WifiP2pService mP2pService;
 
-	public UdpHelper(WifiManager manager) {
+	public UdpHelper(WifiManager manager , WifiP2pService service) {
+		this.mP2pService = service;
 		this.lock = manager.createMulticastLock("UDPwifi");
 	}
 
@@ -43,6 +45,9 @@ public class UdpHelper implements Runnable {
 
 					datagramSocket.receive(datagramPacket);
 					String strMsg = new String(datagramPacket.getData()).trim();
+					
+					mP2pService.udpHeartBeat(datagramPacket.getAddress().getHostAddress().toString());
+					
 					Logger.d("UDP Demo", datagramPacket.getAddress().getHostAddress().toString() + ":" + strMsg);
 					this.lock.release();
 				}

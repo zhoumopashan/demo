@@ -20,7 +20,6 @@ public class MainApplication extends Application {
 
 	@Override
 	public void onCreate() {
-		startService( new Intent(this, WifiP2pService.class).setAction("discover_peers") );
 		initEnvironment();
 		super.onCreate();
 	}
@@ -47,7 +46,14 @@ public class MainApplication extends Application {
 		this.mUiListener = mUiListener;
 	}
 	
+	/******************************
+	 * Private methods
+	 ***************************/
+	
 	private void initEnvironment() {
+//		startService( new Intent(this, WifiP2pService.class).setAction("discover_peers") );
+		startService( new Intent(this, WifiP2pService.class) );
+		
 		initDevice();
 		
 		// Get Screen High & Width

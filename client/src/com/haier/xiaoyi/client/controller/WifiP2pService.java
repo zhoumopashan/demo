@@ -64,6 +64,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	 * device, work as a serverSocket
 	 */
 	private ThreadPoolManager mThreadPoolManager = null;
+	private ThreadPoolManagerWifi mThreadPoolManagerWifi = null;
 
 	/** The wifi p2p manager */
 	private WifiP2pManager mWifiP2pManager = null;
@@ -190,6 +191,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		Logger.d(TAG, "P2p Service onDestroy~~~");
 		unregisterReceiver(mWifiP2pReceiver);
 		mThreadPoolManager.destory();
+		mThreadPoolManagerWifi.destory();
 		super.onDestroy();
 	}
 
@@ -251,12 +253,6 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		// Get wifiP2p manager
 		mWifiP2pManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
 		mWifiUtil = new WifiUtil(getApplicationContext());
-		// 
-		WifiManager manager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
-        mUdpHelper = new UdpHelper(manager);
-        Thread tReceived = new Thread(mUdpHelper);
-        tReceived.start();
-        startRegularCheck();
 
 		// Init channel
 		mChannel = initialize(this, getMainLooper(), this);
@@ -264,6 +260,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		// init thread Pool manager
 		try {
 			mThreadPoolManager = new ThreadPoolManager(this, WifiP2pConfigInfo.LISTEN_PORT, 5);
+			mThreadPoolManagerWifi = new ThreadPoolManagerWifi(this, WifiP2pConfigInfo.WIFI_PORT, 5);
 		} catch (IOException ex) {
 			Logger.e("NetworkService", "onActivityCreated() IOException ex", ex);
 		}
@@ -277,7 +274,12 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		mWifiP2pReceiver = new WifiP2pBroadcastReceiver(this, this);
 		registerReceiver(mWifiP2pReceiver, intentFilter);
 
-//		startRegularCheck();
+		// init Udp Helper
+		WifiManager manager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+		mUdpHelper = new UdpHelper(manager);
+		Thread tReceived = new Thread(mUdpHelper);
+		tReceived.start();
+		startRegularCheck();
 	}
 
 	private void startRegularCheck() {
@@ -294,7 +296,9 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				mUdpHelper.send("luo");				
+				if( WifiUtil.isWifiEnable( getApplicationContext()) ){
+					mUdpHelper.send("luo");	
+				}
 			}
 		}).start();
 		
@@ -308,11 +312,13 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	private void initServiceThread() {
 		Logger.d(TAG, "initServiceThread.");
 		mThreadPoolManager.init();
+		mThreadPoolManagerWifi.init();
 	}
 
 	private void uninitServiceThread() {
 		Logger.d(TAG, "uninitServiceThread.");
 		mThreadPoolManager.uninit();
+		mThreadPoolManagerWifi.uninit();
 	}
 
 	/**

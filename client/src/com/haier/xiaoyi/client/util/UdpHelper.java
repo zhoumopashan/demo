@@ -8,13 +8,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import android.net.wifi.WifiManager;
-import android.util.Log;
 
 /**
  * 
- * UdpHelper帮助类
- * 
- * @author 陈喆榕
  * 
  */
 public class UdpHelper implements Runnable {
@@ -39,7 +35,7 @@ public class UdpHelper implements Runnable {
 			try {
 				while (!IsThreadDisable) {
 					// 准备接收数据
-					Logger.d("UDP Demo", "准备接受");
+//					Logger.d("UDP Demo", "准备接受");
 					this.lock.acquire();
 
 					datagramSocket.receive(datagramPacket);
@@ -59,7 +55,7 @@ public class UdpHelper implements Runnable {
 	public static void send(String message) {
 		message = (message == null ? "Hello IdeasAndroid!" : message);
 		int server_port = 8904;
-		Logger.d("UDP Demo", "UDP发送数据:" + message);
+		Logger.d("UDP", "msg:" + message);
 		DatagramSocket s = null;
 		try {
 			s = new DatagramSocket();

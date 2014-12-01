@@ -9,6 +9,7 @@ import android.os.Message;
 import android.view.View;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
@@ -112,6 +113,10 @@ public class SettingActivity extends Activity implements View.OnClickListener {
 		switch (v.getId()) {
 		case R.id.setting1:
 			Logger.d(TAG, "setting1_btn");
+			if(((MainApplication)getApplication()).getXiaoyi().isWifiAvailable()){
+				Toast.makeText(SettingActivity.this, R.string.already_login_wifi, Toast.LENGTH_LONG).show();
+				return;
+			}
 			startActivity(new Intent(this,WifiActivity.class));
 			break;
 		case R.id.setting2:

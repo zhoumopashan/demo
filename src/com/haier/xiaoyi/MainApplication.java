@@ -28,7 +28,6 @@ public class MainApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		startService(new Intent(this, WifiP2pService.class));
 		initEnvironment();
 	}
 
@@ -64,8 +63,16 @@ public class MainApplication extends Application {
 	public void setXiaoyi(XiaoYi xiaoyi) {
 		mXiaoyi = xiaoyi;
 	}
+	
+	
+	/****************************
+	 * Private methods
+	 ***************************/
 
 	private void initEnvironment() {
+		// start wifip2p service
+		startService(new Intent(this, WifiP2pService.class));
+		
 		// Get Screen High & Width
 		DisplayMetrics dm = new DisplayMetrics();
 		WindowManager manager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);

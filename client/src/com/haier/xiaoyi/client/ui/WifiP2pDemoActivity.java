@@ -160,7 +160,7 @@ public class WifiP2pDemoActivity extends Activity implements WifiP2pActivityList
 		initEnvironment();
 		initLayoutAndViews();
 		
-		startService( new Intent(this, WifiP2pService.class).setAction("discover_peers") );
+//		startService( new Intent(this, WifiP2pService.class).setAction("discover_peers") );
 	}
 	
 	@Override
@@ -593,8 +593,8 @@ public class WifiP2pDemoActivity extends Activity implements WifiP2pActivityList
 
 	@Override
 	public void onHostSure(String hostIp) {
-		mShowMsg += "  ip is :" + hostIp + "  \n";
-		mInfoTv.setText(mShowMsg);
+//		mShowMsg += "  ip is :" + hostIp + "  \n";
+//		mInfoTv.setText(mShowMsg);
 	}
 
 	@Override

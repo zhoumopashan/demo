@@ -282,11 +282,17 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 		public void run() {
 			/* Construct socket */
 			Socket socket = new Socket();
+			int port = WifiP2pConfigInfo.LISTEN_PORT;
 
 			try {
 				socket.bind(null);
-				socket.connect((new InetSocketAddress(mIp, 
-						WifiP2pConfigInfo.LISTEN_PORT)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+				
+				if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
+					mIp = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
+					port = WifiP2pConfigInfo.WIFI_PORT;
+				}
+				
+				socket.connect((new InetSocketAddress(mIp,port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
 				Logger.d(TAG, "Client socket - " + socket.isConnected());
 				OutputStream stream = socket.getOutputStream();
@@ -334,11 +340,17 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 		public void run() {
 			/* Construct socket */
 			Socket socket = new Socket();
+			int port = WifiP2pConfigInfo.LISTEN_PORT;
 
 			try {
 				socket.bind(null);
-				socket.connect((new InetSocketAddress(mIp, 
-						WifiP2pConfigInfo.LISTEN_PORT)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+				
+				if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
+					mIp = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
+					port = WifiP2pConfigInfo.WIFI_PORT;
+				}
+				
+				socket.connect((new InetSocketAddress(mIp,port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
 				Logger.d(TAG, "Client socket - " + socket.isConnected());
 				OutputStream stream = socket.getOutputStream();

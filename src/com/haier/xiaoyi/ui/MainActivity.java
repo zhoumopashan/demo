@@ -104,7 +104,7 @@ public class MainActivity extends Activity implements View.OnClickListener, ISho
 		initWindow();
 		initLayoutsAndViews();
 		
-		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
+//		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 	}
 	
 	@Override
@@ -424,8 +424,15 @@ public class MainActivity extends Activity implements View.OnClickListener, ISho
 
 	@Override
 	public void showProgressDialog(String action) {
+		
+		// if wifi connect , do not show
+		if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
+			return;
+		}
+		
 		if (mProgressDialog != null && mProgressDialog.isShowing()) {
-			mProgressDialog.dismiss();
+//			mProgressDialog.dismiss();
+			return;
 		}
 		mProgressDialog = ProgressDialog.show(this, getString(R.string.wifip2p_p2p_scanning_title), 
 				getString(R.string.wifip2p_p2p_scanning), true, true, 

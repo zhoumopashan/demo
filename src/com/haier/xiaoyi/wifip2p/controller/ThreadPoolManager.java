@@ -26,7 +26,7 @@ import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
  */
 public class ThreadPoolManager extends HandlerThread {
 	
-	private final static String TAG = "ServiceThread";
+	private final static String TAG = "ThreadPoolManager";
 	
 	/**  The socketServer */
 	private final ServerSocket mServer;

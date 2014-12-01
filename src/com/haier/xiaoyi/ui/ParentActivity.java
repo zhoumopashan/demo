@@ -306,8 +306,15 @@ public class ParentActivity extends Activity implements View.OnClickListener{
 			try {
 				// connect the dst server
 				socket.bind(null);
+				
+				if(((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
+					host = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
+					port = WifiP2pConfigInfo.WIFI_PORT;
+				}
+				
 				socket.connect((new InetSocketAddress(host, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);
 				Logger.d(this.getClass().getName(), "Client socket - " + socket.isConnected());
+				Logger.d(this.getClass().getName(), "socket's ip:" + host + ",port:" + port);
 				
 				// Get the file's info
 				OutputStream outs = socket.getOutputStream();
