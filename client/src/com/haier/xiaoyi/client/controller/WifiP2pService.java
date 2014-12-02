@@ -35,6 +35,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.haier.xiaoyi.client.MainApplication;
@@ -165,6 +166,8 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			updateWifiState(intent);
 		} else if(action.equals("wifi_disconnect")){
 			disableWifiState();
+		} else{
+			discoverPeers();
 		}
 
 		return START_STICKY;
@@ -300,6 +303,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			@Override
 			public void run() {
 				if( WifiUtil.isWifiEnable( getApplicationContext()) ){
+					Logger.d(TAG,"Sending msg while wifi is good");
 					mUdpHelper.send("luo");	
 				}
 			}
@@ -856,6 +860,33 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			Logger.e(TAG, e.getMessage());
 		}
 	}
+	
+	public void handleSleep(InputStream ins){
+		try {
+			String strBuffer = "";
+			byte[] buffer = new byte[1024];
+			int len;
+			while ((len = ins.read(buffer)) != -1) {
+				strBuffer = strBuffer + new String(buffer, 0, len);
+			}
+
+			int offset1 = strBuffer.indexOf("sleep:");
+			Logger.d(TAG, "recvPeerSockAddr strBuffer:" + strBuffer);
+
+			if (offset1 != -1) {
+				int sleep = Integer.parseInt(strBuffer.substring(offset1 + 6, strBuffer.length()));
+				Logger.d(TAG,"Sleep : " + sleep);
+				if(sleep != -1){
+					sleep *= 1000;
+				}
+				Settings.System.putInt(getContentResolver(),android.provider.Settings.System.SCREEN_OFF_TIMEOUT, sleep);
+			}
+
+		} catch (IOException e) {
+			Logger.e(TAG, e.getMessage());
+		}
+	}
+
 
 	/**
 	 * After the network reConnect, a group owner send broadcast <br>

@@ -10,6 +10,7 @@ import java.net.Socket;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,10 +34,10 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 	 * Macros <br>
 	 ******************************/
 	private static final String TAG = "ClockActivity";
-	private static final int GET_UP = 0;
-	private static final int SLEEP = 1;
-	private static final int EAT = 2;
-	private int mClockType = GET_UP;
+	public static final int GET_UP = 0;
+	public static final int SLEEP = 1;
+	public static final int EAT = 2;
+	public int mClockType = GET_UP;
 
 	/******************************
 	 * public Members <br>
@@ -200,9 +201,13 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 		}
 
 		mOk.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
+				
+				SharedPreferences settings = getSharedPreferences("default", 0);
+				SharedPreferences.Editor localEditor = settings.edit();
+				localEditor.putBoolean("clock" + mClockType, true).commit();
+				
 				int h = mTimePicker.getCurrentHour();
 				int m = mTimePicker.getCurrentMinute();
 				Logger.d(TAG, h + " : " + m);
@@ -216,6 +221,11 @@ public class ClockActivity extends Activity implements View.OnClickListener {
 		mClose.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				
+				SharedPreferences settings = getSharedPreferences("default", 0);
+				SharedPreferences.Editor localEditor = settings.edit();
+				localEditor.putBoolean("clock" + mClockType, false).commit();
+				
 				String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
 				new Thread(new SendCloseClockRunnable(ip) ).start();
 			}

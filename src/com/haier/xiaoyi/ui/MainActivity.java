@@ -103,8 +103,6 @@ public class MainActivity extends Activity implements View.OnClickListener, ISho
 		initEnvironment();
 		initWindow();
 		initLayoutsAndViews();
-		
-//		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 	}
 	
 	@Override
@@ -176,9 +174,9 @@ public class MainActivity extends Activity implements View.OnClickListener, ISho
 	@Override
 	public void onClick(View v) {
 		
-//		if(!connectCheck() && v.getId() != R.id.main_func_middle_btn){
-//			return;
-//		}
+		if(!connectCheck() && v.getId() != R.id.main_func_middle_btn){
+			return;
+		}
 		
 		switch (v.getId()) {
 		case R.id.btn1:
@@ -230,6 +228,8 @@ public class MainActivity extends Activity implements View.OnClickListener, ISho
 	private void initEnvironment() {
 		((MainApplication)getApplication()).addActivity(this);
 		((MainApplication)getApplication()).setDialogHolder(this);
+		
+		startService(new Intent(this,WifiP2pService.class).setAction("discover_peers"));
 	}
 
 	/**
@@ -402,6 +402,10 @@ public class MainActivity extends Activity implements View.OnClickListener, ISho
 	}
 	
 	private boolean connectCheck(){
+		if(((MainApplication)getApplication()).getXiaoyi().isWifiAvailable()){
+			return true;
+		}
+		
 		WifiP2pDevice device = ((MainApplication)getApplication()).getLocalDevice();
 		if(device.status != WifiP2pDevice.CONNECTED){
 			Toast.makeText(this, R.string.wifip2p_wait, Toast.LENGTH_SHORT).show();

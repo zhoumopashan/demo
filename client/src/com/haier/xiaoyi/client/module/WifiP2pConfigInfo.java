@@ -52,6 +52,7 @@ public class WifiP2pConfigInfo {
 	public static final int COMMAND_ID_SEND_WIFI = 222;
 	public static final int COMMAND_ID_TAKE_PHOTO = 223;
 	public static final int COMMAND_ID_GET_PHOTO = 224;
+	public static final int COMMAND_ID_SLEEP = 225;
 	
 	/** About server Socket */
 	/** ServerSocket's Port */

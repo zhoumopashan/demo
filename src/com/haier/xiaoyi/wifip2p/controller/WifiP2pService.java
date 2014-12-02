@@ -614,7 +614,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			((MainApplication) getApplication()).getXiaoyi().setWifiIp(null);
 			showProgressDialog("discover_peers");
 			if(!((MainApplication) getApplication()).getXiaoyi().isConnect()){
-				unregisterWifiP2pReceiver();
+				registerWifiP2pReceiver();
 				discoverPeers();
 			}
 		}

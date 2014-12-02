@@ -22,7 +22,7 @@ public class NetworkConnectChangedReceiver extends BroadcastReceiver {
 
 			//判断网络连接类型，只有在3G或wifi里进行一些数据更新。
 			int netType = networkInfo.getType();
-			if (networkInfo.isAvailable() && netType == ConnectivityManager.TYPE_WIFI) {
+			if (networkInfo.isAvailable() && networkInfo.isConnected() && netType == ConnectivityManager.TYPE_WIFI) {
 				WifiManager mWifiManager;
 				/** WifiInfo */
 				WifiInfo mWifiInfo;

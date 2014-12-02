@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -189,14 +190,28 @@ public class CareActivity extends Activity implements View.OnClickListener {
 	}
 
 	private void initLayoutsAndViews() {
+		
+		boolean isBtn1Set = getSharedPreferences("default", 0).getBoolean("clock" + ClockActivity.GET_UP, false);
+		boolean isBtn2Set = getSharedPreferences("default", 0).getBoolean("clock" + ClockActivity.SLEEP, false);
+		boolean isBtn3Set = getSharedPreferences("default", 0).getBoolean("clock" + ClockActivity.EAT, false);
+		
 		mBtn1 = (TextView) findViewById(R.id.care1_btn);
 		mBtn1.setOnClickListener(this);
+		if(isBtn1Set){
+			mBtn1.setSelected(true);
+		}
 
 		mBtn2 = (TextView) findViewById(R.id.care2_btn);
 		mBtn2.setOnClickListener(this);
+		if(isBtn2Set){
+			mBtn2.setSelected(true);
+		}
 
 		mBtn3 = (TextView) findViewById(R.id.care3_btn);
 		mBtn3.setOnClickListener(this);
+		if(isBtn3Set){
+			mBtn3.setSelected(true);
+		}
 
 		mBtn4 = (TextView) findViewById(R.id.care4_btn);
 		mBtn4.setOnClickListener(this);

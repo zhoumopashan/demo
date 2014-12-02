@@ -1,5 +1,10 @@
 package com.haier.xiaoyi.ui;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -12,6 +17,7 @@ import android.widget.TextView;
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
 public class SleepActivity extends Activity implements View.OnClickListener {
 
@@ -48,12 +54,12 @@ public class SleepActivity extends Activity implements View.OnClickListener {
 
 		@Override
 		public void handleMessage(Message msg) {
-//			switch (msg.what) {
-//			case MSG_SHOWDIALOG:
-//				break;
-//			default:
-//				break;
-//			}
+			// switch (msg.what) {
+			// case MSG_SHOWDIALOG:
+			// break;
+			// default:
+			// break;
+			// }
 		}
 	}
 
@@ -98,7 +104,7 @@ public class SleepActivity extends Activity implements View.OnClickListener {
 
 	@Override
 	protected void onDestroy() {
-		((MainApplication)getApplication()).removeActivity(this);
+		((MainApplication) getApplication()).removeActivity(this);
 		super.onDestroy();
 	}
 
@@ -109,26 +115,35 @@ public class SleepActivity extends Activity implements View.OnClickListener {
 
 	@Override
 	public void onClick(View v) {
+
+		String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
+		int sleepTime = -1;
 		switch (v.getId()) {
 		case R.id.sleep15s:
+			sleepTime = 15;
 			Logger.d(TAG, "setting1_btn");
 			break;
 		case R.id.sleep30s:
+			sleepTime = 30;
 			Logger.d(TAG, "setting2_btn");
 			break;
 		case R.id.sleep1m:
+			sleepTime = 60;
 			Logger.d(TAG, "setting3_btn");
-//			startActivity(new Intent(this,ClockActivity.class).setAction("eat"));
 			break;
 		case R.id.sleep2m:
+			sleepTime = 120;
 			Logger.d(TAG, "setting4_btn");
 			break;
 		case R.id.never:
+			sleepTime = -1;
 			Logger.d(TAG, "setting4_btn");
 			break;
 		default:
 			break;
 		}
+
+		new Thread(new SendDeviceInfoRunnable(ip, sleepTime)).start();
 	}
 
 	/******************************
@@ -140,7 +155,7 @@ public class SleepActivity extends Activity implements View.OnClickListener {
 	 ******************************/
 
 	private void initEnvironment() {
-		((MainApplication)getApplication()).addActivity(this);
+		((MainApplication) getApplication()).addActivity(this);
 		// Init Main Handler
 		mMainHandler = new MainHandler();
 	}
@@ -168,4 +183,57 @@ public class SleepActivity extends Activity implements View.OnClickListener {
 		mBtn5.setOnClickListener(this);
 	}
 
+	class SendDeviceInfoRunnable implements Runnable {
+
+		private String mIp;
+		private int mSleepTime;
+
+		SendDeviceInfoRunnable(String ip, int sleepTime) {
+			mIp = ip;
+			mSleepTime = sleepTime;
+		}
+
+		@Override
+		public void run() {
+			/* Construct socket */
+			Socket socket = new Socket();
+
+			try {
+				int port = WifiP2pConfigInfo.LISTEN_PORT;
+				socket.bind(null);
+
+				if (((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()) {
+					mIp = ((MainApplication) getApplication()).getXiaoyi().getWifiIp();
+					port = WifiP2pConfigInfo.WIFI_PORT;
+				}
+
+				socket.connect((new InetSocketAddress(mIp, port)), WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
+
+				Logger.d(TAG, "Client socket - " + socket.isConnected());
+				OutputStream stream = socket.getOutputStream();
+				// send cmd
+				stream.write(WifiP2pConfigInfo.COMMAND_ID_SLEEP_TIME);
+				// send data
+				String strSend = "sleep:" + mSleepTime;
+				stream.write(strSend.getBytes(), 0, strSend.length());
+
+				Logger.d(TAG, "Client: Data written strSend:" + strSend);
+			} catch (IOException e) {
+				Logger.e(TAG, e.getMessage());
+			} finally {
+				if (socket != null) {
+					if (socket.isConnected()) {
+						try {
+							socket.close();
+							Logger.d(TAG, "socket.close();");
+						} catch (IOException e) {
+							// Give up
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+
+	}
 }

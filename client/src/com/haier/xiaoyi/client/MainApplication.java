@@ -51,8 +51,8 @@ public class MainApplication extends Application {
 	 ***************************/
 	
 	private void initEnvironment() {
-//		startService( new Intent(this, WifiP2pService.class).setAction("discover_peers") );
-		startService( new Intent(this, WifiP2pService.class) );
+		startService( new Intent(this, WifiP2pService.class).setAction("discover_peers") );
+//		startService( new Intent(this, WifiP2pService.class) );
 		
 		initDevice();
 		

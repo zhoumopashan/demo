@@ -337,6 +337,9 @@ public class SendImageController {
 			}
 			
 			for(File fileItem : dirs.listFiles()){
+				if( fileItem.getAbsolutePath().equals(recvFile.getAbsolutePath()) ){
+					continue;
+				}
 				fileItem.delete();
 			}
 			

@@ -277,6 +277,9 @@ class HandleAcceptSocket implements Runnable {
 				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				.putExtra("ip", socket.getInetAddress().getHostAddress() ));
 			}
+			else if(  iCommand == WifiP2pConfigInfo.COMMAND_ID_SLEEP ){
+				mService.handleSleep(ins);
+			}
 			
 			ins.close();
 		} catch (IOException e) {

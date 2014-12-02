@@ -314,7 +314,7 @@ public class WifiUtil {
 		ConnectivityManager conManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo  = conManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 //		NetworkInfo.State state = networkInfo.getState();
-		return networkInfo.isAvailable();
+		return (networkInfo.isAvailable() && networkInfo.isConnected());
 	}
 	
 	/**
