@@ -80,7 +80,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 
 	/** WifiP2p BroadcastReceiver */
 	private BroadcastReceiver mWifiP2pReceiver = null;
-	private final IntentFilter intentFilter = new IntentFilter();
+	private IntentFilter mIntentFilter = null;
 	private AlarmManager mAlarm = null;
 	private static volatile int pHeartBeatTimes = 0;
 
@@ -162,18 +162,10 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			// getApplication()).getLocalDevice();
 			showProgressDialog("discover_peers");
 			discoverPeers();
-			/*
-			 * if( device == null ){ // show dialog
-			 * showProgressDialog("discover_peers"); discoverPeers(); }else
-			 * if(device.status == WifiP2pDevice.AVAILABLE){ // show dialog
-			 * showProgressDialog("discover_peers"); discoverPeers(); }else if(
-			 * device.status == WifiP2pDevice.CONNECTED &&
-			 * TextUtils.isEmpty(((MainApplication)
-			 * getApplication()).getXiaoyi().getHostIp())){ // removeGroup();
-			 * discoverPeers(); }
-			 */
 		} else if (action.equals("send_peer_info")) {
 			handleSendPeerInfo();
+		} else if( action.equals("regular_job")){
+			doRegularJobs();
 		}
 
 		intent = null;
@@ -192,7 +184,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	@Override
 	public void onDestroy() {
 		Logger.d(TAG, "P2p Service onDestroy~~~");
-		unregisterReceiver(mWifiP2pReceiver);
+		unregisterWifiP2pReceiver();
 		cancelDisconnect();
 		removeGroup();
 		mUdpHelper.IsThreadDisable = true;
@@ -251,10 +243,6 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		IShowDialog dialog = ((MainApplication) getApplication()).getDialogHolder();
 		if (dialog != null)
 			dialog.showProgressDialog(action);
-		// Intent intent = new Intent(this,DialogActivity.class);
-		// intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		// intent.setAction(action);
-		// startActivity(intent);
 	}
 
 	private void dismissProgressDialog() {
@@ -262,10 +250,6 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		IShowDialog dialog = ((MainApplication) getApplication()).getDialogHolder();
 		if (dialog != null)
 			dialog.dismissProgressDialog();
-		// Intent intent = new Intent(this,DialogActivity.class);
-		// intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		// intent.setAction("dismiss");
-		// startActivity(intent);
 	}
 
 	/***********************
@@ -298,14 +282,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			Logger.e("NetworkService", "onActivityCreated() IOException ex", ex);
 		}
 
-		// Add wifi p2p state broadcastReceiver
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-		intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-		intentFilter.addAction("regular_jobs");
-		mWifiP2pReceiver = new WifiP2pBroadcastReceiver(this, this);
-		registerReceiver(mWifiP2pReceiver, intentFilter);
+		registerWifiP2pReceiver();
 
 		mApplication = (MainApplication) getApplication();
 		mSendImageCtrl = new SendImageController(mApplication);
@@ -359,9 +336,6 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 
 			@Override
 			public void onFailure(int reason) {
-				// Toast.makeText(WifiP2pService.this,
-				// R.string.wifip2p_connecting_failed, Toast.LENGTH_SHORT)
-				// .show();
 			}
 		});
 	}
@@ -372,26 +346,20 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		if (mWifiP2pManager == null)
 			return;
 
-		// disconnect
-		mWifiP2pManager.cancelConnect(mChannel, new ActionListener() {
-			@Override
-			public void onSuccess() {
-				// Toast.makeText(WifiP2pService.this,
-				// R.string.wifip2p_connecting_canceled,
-				// Toast.LENGTH_SHORT).show();
-			}
+		try {
+			// disconnect
+			mWifiP2pManager.cancelConnect(mChannel, new ActionListener() {
+				@Override
+				public void onSuccess() {
+				}
 
-			@Override
-			public void onFailure(int reasonCode) {
-				// Toast.makeText(
-				// WifiP2pService.this,
-				// String.format(
-				// getResources()
-				// .getString(
-				// R.string.wifip2p_connecting_cancel_failed),
-				// reasonCode), Toast.LENGTH_SHORT).show();
-			}
-		});
+				@Override
+				public void onFailure(int reasonCode) {
+				}
+			});
+		} catch (Exception ex) {
+			Logger.e(TAG, "cancelDisconnect error");
+		}
 	}
 
 	private WifiP2pManager.Channel initialize(Context srcContext, Looper srcLooper, WifiP2pManager.ChannelListener listener) {
@@ -423,34 +391,18 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 
 			@Override
 			public void onSuccess() {
-				// if (mActivity != null) {
-				// mActivity.onDisconnect();
-				// }
 			}
 		});
 	}
 
 	public void resetPeers() {
 		mP2pDeviceList.clear();
-		// if (mActivity != null) {
-		// mActivity.resetPeers();
-		// }
 	}
 
 	public void requestConnectionInfo(WifiP2pManager.ConnectionInfoListener listener) {
 		mWifiP2pManager.requestConnectionInfo(mChannel, listener);
 	}
 
-	// private boolean bVerifyRecvFile = false;
-	//
-	// public boolean isbVerifyRecvFile() {
-	// return bVerifyRecvFile;
-	// }
-	//
-	// public void setbVerifyRecvFile(boolean bVerifyRecvFile) {
-	// this.bVerifyRecvFile = bVerifyRecvFile;
-	// }
-	//
 	public void postRecvPeerList(int count) {
 		Message msg = new Message();
 		msg.what = WifiP2pConfigInfo.MSG_REPORT_RECV_PEER_LIST;
@@ -620,26 +572,6 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		Logger.d(TAG, "updateLocalDevice , device.status is :" + device.status);
 		mLocalDevice = device;
 		((MainApplication) getApplication()).setLocalDevice(device);
-		/*
-		 * if (device.status == WifiP2pDevice.INVITED) { //
-		 * showProgressDialog("connect"); } else if (device.status !=
-		 * WifiP2pDevice.CONNECTED) { discoverPeers();
-		 * showProgressDialog("discover_peers"); } else {
-		 * if(TextUtils.isEmpty(mApplication.getXiaoyi().getHostIp())){ new
-		 * Thread(new Runnable() {
-		 * 
-		 * @Override public void run() { int retryTime = 3; while( --retryTime >
-		 * 0){ try { Thread.sleep(3000); } catch (InterruptedException e) { //
-		 * TODO Auto-generated catch block e.printStackTrace(); }
-		 * if(!TextUtils.isEmpty(mApplication.getXiaoyi().getHostIp())){
-		 * dismissProgressDialog(); return; } } removeGroup(); discoverPeers();
-		 * } }).start(); }else{ dismissProgressDialog(); }
-		 * 
-		 * }
-		 */
-		// if (mActivity != null) {
-		// mActivity.updateLocalDevice(device);
-		// }
 	}
 
 	/**
@@ -678,7 +610,10 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(false);
 			((MainApplication) getApplication()).getXiaoyi().setWifiIp(null);
 			showProgressDialog("discover_peers");
-			discoverPeers();
+			if(!((MainApplication) getApplication()).getXiaoyi().isConnect()){
+				unregisterWifiP2pReceiver();
+				discoverPeers();
+			}
 		}
 	}
 	
@@ -688,18 +623,39 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(true);
 		((MainApplication) getApplication()).getXiaoyi().setWifiIp(wifiIp);
 		
-		if (mWifiP2pManager != null) {
-			try {
-//				cancelDisconnect();
-//				removeGroup();
-				mWifiP2pManager.stopPeerDiscovery(mChannel, null);
-				Logger.d(TAG, "P2p Service Destroy done~~~");
-			} catch (Exception ex) {
-
+		if( ((MainApplication) getApplication()).getXiaoyi().isConnect() ){
+			((MainApplication) getApplication()).getXiaoyi().setIsConnect(false);
+			unregisterWifiP2pReceiver();
+			if (mWifiP2pManager != null) {
+				try {
+					cancelDisconnect();
+					removeGroup();
+					mWifiP2pManager.stopPeerDiscovery(mChannel, null);
+					Logger.d(TAG, "P2p Service Destroy done~~~");
+				} catch (Exception ex) {
+					Logger.e(TAG,"udpHeartBeat error");
+				}
 			}
 		}
 		
 		dismissProgressDialog();
+	}
+	
+	private void registerWifiP2pReceiver() {
+		mIntentFilter = new IntentFilter();
+		mWifiP2pReceiver = new WifiP2pBroadcastReceiver(this, this);
+		// Add wifi p2p state broadcastReceiver
+		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+		registerReceiver(mWifiP2pReceiver, mIntentFilter);
+	}
+	
+	private void unregisterWifiP2pReceiver(){
+		unregisterReceiver(mWifiP2pReceiver);
+		mWifiP2pReceiver = null;
+		mIntentFilter = null;
 	}
 
 	private void sendPhoto() {

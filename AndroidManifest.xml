@@ -50,6 +50,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver android:name=".wifip2p.controller.WifiP2pRegularTaskReceiver" >
+              <intent-filter>
+                <action android:name="regular_jobs" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".ui.ParentActivity"
             android:screenOrientation="portrait" >
