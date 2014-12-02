@@ -26,6 +26,8 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 	 * Macros <br>
 	 ******************************/
 	private static final String TAG = "ParentActivity";
+	private static final int VIDEO = 1;
+	private static final int PHOTO = 2;
 
 	/******************************
 	 * public Members <br>
@@ -121,6 +123,8 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 			handleSmartHomeBtnClick();
 			break;
 		case R.id.smart_home_btn_2:
+//			startActivity(new Intent(this, PhotoActivity.class));
+			handlePhotoBtnClick();
 			Logger.d(TAG, "care2_btn");
 			break;
 //		case R.id.care3_btn:
@@ -170,32 +174,51 @@ public class SmartHomeActivity extends Activity implements View.OnClickListener 
 	
 	private void handleSmartHomeBtnClick(){
 		String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
-		new Thread(new OpenClientVideoRunnable(ip)).start();
+		new Thread(new OpenClientVideoRunnable(ip,VIDEO) ).start();
 		startActivity(new Intent(SmartHomeActivity.this,VideoChat.class));
+	}
+	
+	private void handlePhotoBtnClick(){
+		String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
+		new Thread(new OpenClientVideoRunnable(ip,PHOTO) ).start();
 	}
 	
 	class OpenClientVideoRunnable implements Runnable {
 
 		private String mIp;
+		private int mMode;
 
-		OpenClientVideoRunnable(String ip) {
+		OpenClientVideoRunnable(String ip , int mode) {
 			mIp = ip;
+			mMode = mode;
 		}
 
 		@Override
 		public void run() {
 			/* Construct socket */
 			Socket socket = new Socket();
+			int port = WifiP2pConfigInfo.LISTEN_PORT;
 
 			try {
 				socket.bind(null);
-				socket.connect((new InetSocketAddress(mIp, WifiP2pConfigInfo.LISTEN_PORT)),
+				
+				if(((MainApplication)getApplication()).getXiaoyi().isWifiAvailable()){
+					mIp = ((MainApplication)getApplication()).getXiaoyi().getWifiIp();
+					port = WifiP2pConfigInfo.WIFI_PORT;
+				}
+				
+				socket.connect((new InetSocketAddress(mIp, port )),
 						WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
 				Logger.d(TAG, "Client socket - " + socket.isConnected());
 				OutputStream stream = socket.getOutputStream();
 				// send cmd
-				stream.write(WifiP2pConfigInfo.COMMAND_ID_START_CLIENT_VIDEO);
+				if(mMode == VIDEO){
+					stream.write(WifiP2pConfigInfo.COMMAND_ID_START_CLIENT_VIDEO);
+				}else{
+					stream.write(WifiP2pConfigInfo.COMMAND_ID_TAKE_PHOTO);
+				}
+				
 
 			} catch (IOException e) {
 				Logger.e(TAG, e.getMessage());

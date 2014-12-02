@@ -192,6 +192,8 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		mThreadPoolManagerWifi.destory();
 		if (mWifiP2pManager != null) {
 			try {
+				PendingIntent sender = PendingIntent.getBroadcast(this, 0, new Intent("regular_jobs"), 0);
+				mAlarm.cancel(sender);
 				mWifiP2pManager.stopPeerDiscovery(mChannel, null);
 				Logger.d(TAG, "P2p Service Destroy done~~~");
 			} catch (Exception ex) {
@@ -605,7 +607,8 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	
 	public void doRegularJobs() {
 		Logger.d(TAG,"do it regular!");
-		if(pHeartBeatTimes++ > (RETRY_CHANNEL_TIMES + 3)){
+		if(pHeartBeatTimes++ > (RETRY_CHANNEL_TIMES + 3) && 
+				((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
 			Logger.d(TAG," Wifi Connect error!");
 			((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(false);
 			((MainApplication) getApplication()).getXiaoyi().setWifiIp(null);
@@ -653,7 +656,9 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	}
 	
 	private void unregisterWifiP2pReceiver(){
-		unregisterReceiver(mWifiP2pReceiver);
+		if(mWifiP2pReceiver != null){
+			unregisterReceiver(mWifiP2pReceiver);
+		}
 		mWifiP2pReceiver = null;
 		mIntentFilter = null;
 	}

@@ -17,6 +17,7 @@ import android.os.Message;
 import android.os.Process;
 
 import com.haier.xiaoyi.client.module.WifiP2pConfigInfo;
+import com.haier.xiaoyi.client.ui.PhotoActivity;
 import com.haier.xiaoyi.client.util.Logger;
 import com.haier.xiaoyi.client.videochat.VideoChat;
 
@@ -251,6 +252,10 @@ class HandleWifiAcceptSocket implements Runnable {
 			}
 			else if(  iCommand == WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE ){
 				mService.handleRecvXiaoyiName(ins,WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE);
+			}
+			else if(  iCommand == WifiP2pConfigInfo.COMMAND_ID_TAKE_PHOTO ){
+//				mService.handleRecvXiaoyiName(ins,WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE);
+				mService.startActivity(new Intent(mService,PhotoActivity.class));
 			}
 			
 			ins.close();
