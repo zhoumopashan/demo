@@ -335,6 +335,11 @@ public class SendImageController {
 				// Go, let's go and test a new cool & powerful method.
 				Utility.openFile(service, recvFile);
 			}
+			
+			for(File fileItem : dirs.listFiles()){
+				fileItem.delete();
+			}
+			
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();

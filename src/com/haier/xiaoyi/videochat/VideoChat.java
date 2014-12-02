@@ -330,10 +330,17 @@ public class VideoChat extends Base implements SurfaceHolder.Callback, Camera.Pr
 		public void run() {
 			/* Construct socket */
 			Socket socket = new Socket();
+			port = WifiP2pConfigInfo.LISTEN_PORT;
 
 			try {
 				socket.bind(null);
-				socket.connect((new InetSocketAddress(mIp, WifiP2pConfigInfo.LISTEN_PORT)),
+				
+				if( ((MainApplication)getApplication()).getXiaoyi().isWifiAvailable() ){
+					mIp = ((MainApplication)getApplication()).getXiaoyi().getWifiIp();
+					port = WifiP2pConfigInfo.WIFI_PORT;
+				}
+				
+				socket.connect((new InetSocketAddress(mIp, port)),
 						WifiP2pConfigInfo.SOCKET_TIMEOUT);// host
 
 				Logger.d("video", "Client socket - " + socket.isConnected());

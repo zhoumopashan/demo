@@ -254,8 +254,10 @@ class HandleWifiAcceptSocket implements Runnable {
 				mService.handleRecvXiaoyiName(ins,WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE);
 			}
 			else if(  iCommand == WifiP2pConfigInfo.COMMAND_ID_TAKE_PHOTO ){
-//				mService.handleRecvXiaoyiName(ins,WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE);
-				mService.startActivity(new Intent(mService,PhotoActivity.class));
+				Logger.d("ThreadPool", "get take photo from :" + socket.getInetAddress().getHostAddress());
+				mService.startActivity(new Intent(mService,PhotoActivity.class)
+				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+				.putExtra("ip", socket.getInetAddress().getHostAddress() ));
 			}
 			
 			ins.close();

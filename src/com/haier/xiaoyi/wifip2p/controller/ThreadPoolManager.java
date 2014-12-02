@@ -1,5 +1,7 @@
 package com.haier.xiaoyi.wifip2p.controller;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -10,12 +12,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
 
 import com.haier.xiaoyi.util.Logger;
+import com.haier.xiaoyi.wifip2p.module.Utility;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
 /**
@@ -205,7 +209,8 @@ class HandleAcceptSocket implements Runnable {
 			else if (iCommand == WifiP2pConfigInfo.COMMAND_ID_SEND_FILE) {
 				lockRecvFile.lock();
 				try {
-					mService.setRemoteSockAddress(sockAddr);
+					recvFileAndSave(ins);
+//					mService.setRemoteSockAddress(sockAddr);
 //					mService.handleRecvFile(ins);
 				} finally {
 					lockRecvFile.unlock();
@@ -228,6 +233,41 @@ class HandleAcceptSocket implements Runnable {
 		} catch (IOException e) {
 			Logger.e(this.getClass().getName(), e.getMessage());
 			return;
+		}
+	}
+	
+	public boolean recvFileAndSave(InputStream ins) {
+		try {
+			File ecanDir = new File(Environment.getExternalStorageDirectory() + "/ecan");
+			if(!ecanDir.exists()){
+				ecanDir.mkdirs();
+			}
+			final File recvFile = new File(Environment.getExternalStorageDirectory() + 
+					"/ecan/cache.jpg");
+
+			File dirs = new File(recvFile.getParent());
+			if (!dirs.exists())
+				dirs.mkdirs();
+			recvFile.createNewFile();
+
+			FileOutputStream fileOutS = new FileOutputStream(recvFile);
+
+			byte buf[] = new byte[1024];
+			int len;
+			while ((len = ins.read(buf)) != -1) {
+				fileOutS.write(buf, 0, len);
+
+			}
+			fileOutS.close();
+			String strFile = recvFile.getAbsolutePath();
+			if (strFile != null) {
+				// Go, let's go and test a new cool & powerful method.
+				Utility.openFile(mService, recvFile);
+			}
+			return true;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 }

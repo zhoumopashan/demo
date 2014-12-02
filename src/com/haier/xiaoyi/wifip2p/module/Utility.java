@@ -14,6 +14,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -43,7 +44,7 @@ public class Utility {
 		return type;
 	}
 
-	static public void openFile(Activity activity, File file) {
+	static public void openFile(Context activity, File file) {
 		// Uri uri = Uri.parse("file://"+file.getAbsolutePath());
 		Logger.d("open File" , "fileName:" + file.getAbsolutePath());
 		Intent intent = new Intent();
