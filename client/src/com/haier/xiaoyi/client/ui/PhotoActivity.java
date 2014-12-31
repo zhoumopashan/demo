@@ -39,6 +39,7 @@ public class PhotoActivity extends Activity {
 		setupViews();
 		mIp = getIntent().getStringExtra("ip");
 		mPicture = new File(Environment.getExternalStorageDirectory() + "/ecan/cache.jpg");
+		
 		new MyThread().start(); 
 //		new Thread(new MySendFileRunable() ).start();
 	}
@@ -118,6 +119,15 @@ public class PhotoActivity extends Activity {
 		@Override
 		public void run() {
 			super.run();
+			
+			while( camera == null ){
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			
 			takePic();
 		}
 	}

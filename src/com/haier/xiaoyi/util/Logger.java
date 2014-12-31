@@ -3,7 +3,7 @@ package com.haier.xiaoyi.util;
 import android.util.Log;
 
 public class Logger {
-    private static final String TAG = "haier";
+    private static final String TAG = "luodemo";
     public static final boolean LOGABLE = true;
 
     public static void d(String alt, String msg) {

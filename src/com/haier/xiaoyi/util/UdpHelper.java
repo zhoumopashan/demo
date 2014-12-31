@@ -56,6 +56,8 @@ public class UdpHelper implements Runnable {
 			}
 		} catch (SocketException e) {
 			Logger.e("UDP Demo", "error");e.printStackTrace();
+		} catch (Exception e) {
+			Logger.e("UDP Demo", "error");e.printStackTrace();
 		}
 
 	}

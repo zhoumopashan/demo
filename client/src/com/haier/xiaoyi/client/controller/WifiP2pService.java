@@ -228,10 +228,12 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 			@Override
 			public void onSuccess() {
+				Logger.d(TAG,"discovery success");
 			}
 
 			@Override
 			public void onFailure(int reasonCode) {
+				Logger.d(TAG,"discovery failed");
 			}
 		});
 		
@@ -309,6 +311,12 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			}
 		}).start();
 		
+		if( !((MainApplication) getApplication()).getXiaoyi().isWifiAvailable() &&
+				!((MainApplication) getApplication()).getXiaoyi().isConnect() ){
+			Logger.d(TAG," discovery peers in regular");
+			discoverPeers();
+		}
+		
 //		mThreadPoolManager.execute(WrapRunable.getSendWifiInfoRunnable(((MainApplication) getApplication()).getXiaoyi()));
 	}
 
@@ -350,6 +358,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 
 	/** Connect a device by the given config */
 	public void connect(WifiP2pConfig config) {
+		Logger.d(TAG,"connect peer");
 		mWifiP2pManager.connect(mChannel, config, new ActionListener() {
 
 			@Override
@@ -969,7 +978,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			}
 
 			// process the device
-			if (isContain == true || deviceItem.status != WifiP2pDevice.AVAILABLE) {
+			if (isContain == true && deviceItem.status != WifiP2pDevice.AVAILABLE) {
 				continue;
 			}
 
@@ -983,6 +992,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 				mConectTagList.add(deviceTag);
 			}
 
+			Logger.d(TAG,"connect ip: " + deviceItem.deviceAddress);
 			// connnetc it
 			connect(config);
 		}

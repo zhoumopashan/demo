@@ -231,10 +231,12 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		mWifiP2pManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
 			@Override
 			public void onSuccess() {
+				Logger.d(TAG,"discoverPeers success");
 			}
 
 			@Override
 			public void onFailure(int reasonCode) {
+				Logger.d(TAG,"discoverPeers failed");
 			}
 		});
 
@@ -581,7 +583,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	 */
 	@Override
 	public void onPeersAvailable(WifiP2pDeviceList peers) {
-		Logger.d(TAG, "onPeersAvailable");
+		Logger.d(TAG, "onPeersAvailable :" + peers.getDeviceList().size() );
 		mP2pDeviceList.clear();
 		mP2pDeviceList.addAll(peers.getDeviceList());
 	}
@@ -618,9 +620,14 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 				discoverPeers();
 			}
 		}
+		
+		if( !((MainApplication) getApplication()).getXiaoyi().isWifiAvailable() &&
+				!((MainApplication) getApplication()).getXiaoyi().isConnect() ){
+			Logger.d(TAG," discovery peers in regular");
+			discoverPeers();
+		}
 	}
 	
-	@SuppressLint("NewApi")
 	public void udpHeartBeat(String wifiIp){
 		pHeartBeatTimes = 0;
 		((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(true);
@@ -633,7 +640,6 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 				try {
 					cancelDisconnect();
 					removeGroup();
-					mWifiP2pManager.stopPeerDiscovery(mChannel, null);
 					Logger.d(TAG, "P2p Service Destroy done~~~");
 				} catch (Exception ex) {
 					Logger.e(TAG,"udpHeartBeat error");
@@ -645,22 +651,30 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	}
 	
 	private void registerWifiP2pReceiver() {
-		mIntentFilter = new IntentFilter();
-		mWifiP2pReceiver = new WifiP2pBroadcastReceiver(this, this);
-		// Add wifi p2p state broadcastReceiver
-		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-		mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-		registerReceiver(mWifiP2pReceiver, mIntentFilter);
+		try {
+			mIntentFilter = new IntentFilter();
+			mWifiP2pReceiver = new WifiP2pBroadcastReceiver(this, this);
+			// Add wifi p2p state broadcastReceiver
+			mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+			mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+			mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+			mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+			registerReceiver(mWifiP2pReceiver, mIntentFilter);
+		} catch (Exception ex) {
+
+		}
 	}
 	
-	private void unregisterWifiP2pReceiver(){
-		if(mWifiP2pReceiver != null){
-			unregisterReceiver(mWifiP2pReceiver);
+	private void unregisterWifiP2pReceiver() {
+		try {
+			if (mWifiP2pReceiver != null) {
+				unregisterReceiver(mWifiP2pReceiver);
+			}
+			mWifiP2pReceiver = null;
+			mIntentFilter = null;
+		} catch (Exception ex) {
+
 		}
-		mWifiP2pReceiver = null;
-		mIntentFilter = null;
 	}
 
 	private void sendPhoto() {
