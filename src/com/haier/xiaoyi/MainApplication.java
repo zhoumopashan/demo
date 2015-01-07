@@ -70,8 +70,8 @@ public class MainApplication extends Application {
 	 ***************************/
 
 	private void initEnvironment() {
-		// start wifip2p service
-		startService(new Intent(this, WifiP2pService.class));
+//		// start wifip2p service
+//		startService(new Intent(this, WifiP2pService.class));
 		
 		// Get Screen High & Width
 		DisplayMetrics dm = new DisplayMetrics();

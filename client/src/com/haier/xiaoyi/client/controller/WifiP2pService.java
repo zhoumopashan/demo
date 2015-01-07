@@ -62,6 +62,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 
 	/** For connect failed retryOnce */
 	private int mRetryChannelTime = RETRY_CHANNEL_TIMES;
+	private int mDiscoveryTime = 0;
 
 	/**
 	 * A ThreadPool bind with this service, main handle the socket of the
@@ -312,7 +313,8 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		}).start();
 		
 		if( !((MainApplication) getApplication()).getXiaoyi().isWifiAvailable() &&
-				!((MainApplication) getApplication()).getXiaoyi().isConnect() ){
+				!((MainApplication) getApplication()).getXiaoyi().isConnect() && (mDiscoveryTime++) > RETRY_CHANNEL_TIMES ){
+			mDiscoveryTime = 0;
 			Logger.d(TAG," discovery peers in regular");
 			discoverPeers();
 		}

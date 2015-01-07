@@ -83,6 +83,7 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	private IntentFilter mIntentFilter = null;
 	private AlarmManager mAlarm = null;
 	private static volatile int pHeartBeatTimes = 0;
+	private static volatile int pDiscoveryTimes = 0;
 
 	/** The p2p device's list */
 	private List<WifiP2pDevice> mP2pDeviceList = new ArrayList<WifiP2pDevice>();
@@ -609,20 +610,20 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	
 	public void doRegularJobs() {
 		Logger.d(TAG,"do it regular!");
-		if(pHeartBeatTimes++ > (RETRY_CHANNEL_TIMES + 3) && 
+		if(pHeartBeatTimes++ > (RETRY_CHANNEL_TIMES ) && 
 				((MainApplication) getApplication()).getXiaoyi().isWifiAvailable()){
 			Logger.d(TAG," Wifi Connect error!");
 			((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(false);
 			((MainApplication) getApplication()).getXiaoyi().setWifiIp(null);
 			showProgressDialog("discover_peers");
 			if(!((MainApplication) getApplication()).getXiaoyi().isConnect()){
-				registerWifiP2pReceiver();
 				discoverPeers();
 			}
 		}
 		
 		if( !((MainApplication) getApplication()).getXiaoyi().isWifiAvailable() &&
-				!((MainApplication) getApplication()).getXiaoyi().isConnect() ){
+				!((MainApplication) getApplication()).getXiaoyi().isConnect() && (pDiscoveryTimes++) > (RETRY_CHANNEL_TIMES )){
+			pDiscoveryTimes = 0;
 			Logger.d(TAG," discovery peers in regular");
 			discoverPeers();
 		}
@@ -632,20 +633,6 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 		pHeartBeatTimes = 0;
 		((MainApplication) getApplication()).getXiaoyi().setWifiAvailable(true);
 		((MainApplication) getApplication()).getXiaoyi().setWifiIp(wifiIp);
-		
-		if( ((MainApplication) getApplication()).getXiaoyi().isConnect() ){
-			((MainApplication) getApplication()).getXiaoyi().setIsConnect(false);
-			unregisterWifiP2pReceiver();
-			if (mWifiP2pManager != null) {
-				try {
-					cancelDisconnect();
-					removeGroup();
-					Logger.d(TAG, "P2p Service Destroy done~~~");
-				} catch (Exception ex) {
-					Logger.e(TAG,"udpHeartBeat error");
-				}
-			}
-		}
 		
 		dismissProgressDialog();
 	}
