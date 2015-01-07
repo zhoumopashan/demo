@@ -3,16 +3,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <SurfaceView
-        android:id="@+id/video_chat_preview"
-        android:layout_width="200dip"
-        android:layout_height="200dip"
-        android:layout_gravity="center" />
-
-    <com.haier.xiaoyi.client.videochat.HaierVideoView
+    <com.haier.xiaoyi.videochat.HaierVideoView
         android:id="@+id/video_chat_myview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:layout_margin="20dip" />
+
+    <SurfaceView
+        android:id="@+id/video_chat_preview"
+        android:layout_width="150dip"
+        android:layout_height="150dip"
+        android:layout_gravity="top|right"
+        android:layout_margin="10dip"
+        android:layout_marginTop="20dip" />
 
 </FrameLayout>

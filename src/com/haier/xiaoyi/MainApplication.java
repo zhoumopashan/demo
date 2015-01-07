@@ -24,10 +24,16 @@ public class MainApplication extends Application {
 	
 	private List<Activity> activities = new ArrayList<Activity>();
 	public static int ScreenHigh , ScreenWidth;
+	
+	private static MainApplication mInstance = null;
+	public static MainApplication getInstance(){
+		return mInstance;
+	}
 
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mInstance = this;
 		initEnvironment();
 	}
 

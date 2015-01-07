@@ -1,4 +1,5 @@
 #!/bin/bash
 git add .
-git commit -am "commit"
+git reset Head project.properties
+git commit -m "commit"
 git push origin master:master

@@ -36,7 +36,9 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
+import android.widget.EditText;
 
 import com.haier.xiaoyi.client.MainApplication;
 import com.haier.xiaoyi.client.module.PeerInfo;
@@ -744,24 +746,33 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 	public boolean handleRecvXiaoyiName(InputStream ins,int cmd) {
 		try {
 			String strBuffer = "";
+			String name , age;
 
 			byte[] buffer = new byte[1024];
 			int len;
 			while ((len = ins.read(buffer)) != -1) {
 				strBuffer = strBuffer + new String(buffer, 0, len);
 			}
-			Logger.d(TAG, "xiaoyi's name is:" + strBuffer);
-			
-			ContentResolver cr = getContentResolver();
-    		ContentValues values = new ContentValues();
-			if(cmd == WifiP2pConfigInfo.COMMAND_ID_XIAOYI_NAME){
-	    		values.put("COLUMN_XIAOYI_NAME", strBuffer);
-	    	    cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
-			}else{
-	    		values.put("COLUMN_XIAOYI_AGE", strBuffer);
-	    	    cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+			Logger.d(TAG, "xiaoyi's info is:" + strBuffer);
+			if(strBuffer == null || TextUtils.isEmpty(strBuffer)){
+				return false;
 			}
-
+			name = strBuffer.split(":")[0];
+			age = strBuffer.split(":")[1];
+			Logger.d(TAG, "name:" + name + ",age :" + age);
+			
+			// set application
+			( (MainApplication)getApplication()).getXiaoyi().setName(name);
+			( (MainApplication)getApplication()).getXiaoyi().setAge(age);
+			
+			if(!WifiP2pConfigInfo.isDebug){
+				// set setting
+				ContentResolver cr = getContentResolver();
+	    		ContentValues values = new ContentValues();
+		    	values.put("COLUMN_XIAOYI_NAME", strBuffer);
+		    	values.put("COLUMN_XIAOYI_AGE", strBuffer);
+		    	cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+			}
 
 			return true;
 		} catch (IOException e) {
