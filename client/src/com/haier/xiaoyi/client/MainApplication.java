@@ -77,10 +77,10 @@ public class MainApplication extends Application {
 		if(!WifiP2pConfigInfo.isDebug){
 			// set setting
 			ContentResolver cr = getContentResolver();
-    		ContentValues values = new ContentValues();
-    		
     		Cursor cursor = cr.query( Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS") , null, null, null, null );
-    		
+    		if(cursor == null || cursor.getCount() <= 0){  
+    			return;
+    		}
     		String name = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
     		String age = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
     		
