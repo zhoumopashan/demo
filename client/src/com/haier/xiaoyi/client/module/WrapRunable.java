@@ -81,7 +81,9 @@ class SendDeviceInfoRunnable implements Runnable {
 			stream.write(WifiP2pConfigInfo.COMMAND_ID_SEND_DEVICE_MSG);
 			// write peerInfo: "peer:" + strIP + "port:" + port
 			String strSend = "light:" + mDevice.getBright() + "sound:" + mDevice.getVolice();
-			stream.write(strSend.getBytes(), 0, strSend.length());
+			stream.write(strSend.getBytes("UTF-8"), 0, strSend.length());
+			String sendMsg = "xyname:" + mDevice.getName() + "xyage:" + mDevice.getAge();
+			stream.write(sendMsg.getBytes("UTF-8"));
 			
 			Logger.d("SendDeviceInfo", "Client: Data written strSend:" + strSend);
 		} catch (IOException e) {

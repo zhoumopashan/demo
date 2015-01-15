@@ -12,8 +12,14 @@ public class XiaoYi {
 	private WifiP2pInfo mWifiP2pInfo;
 	private String mHostIp = null;
 	private Uri mPhotoUri = null;
+	
+	// wifi info
 	private String mWifiIp = null;
 	private boolean mIsWifiAvailable = false;
+	
+	// xiaoyi info
+	private String mName = "大伊";
+	private String mAge = "18岁";
 
 	public int getVolice() {
 		return mVolice;
@@ -86,6 +92,22 @@ public class XiaoYi {
 
 	public void setWifiAvailable(boolean mIsWifiAvailable) {
 		this.mIsWifiAvailable = mIsWifiAvailable;
+	}
+
+	public String getName() {
+		return mName;
+	}
+
+	public void setName(String mName) {
+		this.mName = mName;
+	}
+
+	public String getAge() {
+		return mAge;
+	}
+
+	public void setAge(String mAge) {
+		this.mAge = mAge;
 	}
 	
 }

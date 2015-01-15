@@ -511,16 +511,22 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 
 			int offset1 = strBuffer.indexOf("light:");
 			int offset2 = strBuffer.indexOf("sound:");
+			int offset3 = strBuffer.indexOf("xyname:");
+			int offset4 = strBuffer.indexOf("xyage:");
 			Logger.d(TAG, "recvPeerSockAddr strBuffer:" + strBuffer);
 
 			if (offset1 != -1 && offset2 != -1) {
 				// String host = strBuffer.substring(offset1 + 5, offset2);
 				int light = Integer.parseInt(strBuffer.substring(offset1 + 6, offset2));
-				int voice = Integer.parseInt(strBuffer.substring(offset2 + 6, strBuffer.length()));
+				int voice = Integer.parseInt(strBuffer.substring(offset2 + 6, offset3));
+				String name = strBuffer.substring(offset3 + 7, offset4);
+				String age = strBuffer.substring(offset4 + 6);
 
 				// PeerInfo info = new PeerInfo(host, port);
 				mApplication.getXiaoyi().setBright(light);
 				mApplication.getXiaoyi().setVolice(voice);
+				mApplication.getXiaoyi().setName(name);
+				mApplication.getXiaoyi().setAge(age);
 			}
 			return true;
 		} catch (IOException e) {

@@ -7,10 +7,7 @@ import java.net.Socket;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,7 +21,7 @@ import android.widget.TextView;
 
 import com.haier.xiaoyi.MainApplication;
 import com.haier.xiaoyi.R;
-import com.haier.xiaoyi.ui.ClockActivity.SendClockRunnable;
+import com.haier.xiaoyi.XiaoYi;
 import com.haier.xiaoyi.util.Logger;
 import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
 
@@ -45,6 +42,11 @@ public class XiaoyiActivity extends Activity {
 	/** Layouts & Views */
 	private TextView mXiaoyiName;
 	private TextView mXiaoyiAge;
+	
+	// 
+	private XiaoYi mXiaoyi;
+	private String mXiaoyiNameStr;
+	private String mXiaoyiAgeStr;
 
 	/******************************
 	 * InnerClass <br>
@@ -132,6 +134,10 @@ public class XiaoyiActivity extends Activity {
 		// Init Main Handler
 		mMainHandler = new MainHandler();
 		((MainApplication) getApplication()).addActivity(this);
+		
+		mXiaoyi = MainApplication.getInstance().getXiaoyi();
+		mXiaoyiNameStr = mXiaoyi.getName();
+		mXiaoyiAgeStr = mXiaoyi.getAge();
 	}
 
 	private void initWindow() {
@@ -143,6 +149,9 @@ public class XiaoyiActivity extends Activity {
 	private void initLayoutsAndViews() {
 		mXiaoyiName = (TextView) findViewById(R.id.xiaoyi_name);
 		mXiaoyiAge = (TextView) findViewById(R.id.xiaoyi_age);
+		
+		mXiaoyiName.setText( getString(R.string.xiaoyi_name_prefx) + mXiaoyiNameStr);
+		mXiaoyiAge.setText( getString(R.string.xiaoyi_age_prefx) + mXiaoyiAgeStr );
 
 		mXiaoyiName.setOnClickListener(new OnClickListener() {
 
@@ -160,16 +169,13 @@ public class XiaoyiActivity extends Activity {
 		        builder.setPositiveButton("确认",  
 		                new DialogInterface.OnClickListener() {  
 		                    public void onClick(DialogInterface dialog, int whichButton) {  
+		                    	mXiaoyiNameStr = edtInput.getText().toString();
+		                    	mXiaoyi.setName(mXiaoyiNameStr);
+		                    	// update UI
 		                    	mXiaoyiName.setText(getText(R.string.xiaoyi_name_prefx) + edtInput.getText().toString());
+		                    	// send to device
 		                    	String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
-		                    	new Thread(new SendXiaoyiNameRunnable(ip, edtInput.getText().toString(),
-		                    			WifiP2pConfigInfo.COMMAND_ID_XIAOYI_NAME)).start();
-		                    	
-//		                    	ContentResolver cr = XiaoyiActivity.this.getContentResolver();
-//		                		ContentValues values = new ContentValues();
-//		                		
-//		                		values.put("COLUMN_XIAOYI_NAME", edtInput.getText().toString());
-//		                	    cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+		                    	new Thread(new SendXiaoyiInfoRunnable( ip, mXiaoyi )).start();
 		                    }  
 		                });  
 		        builder.show();  
@@ -191,17 +197,12 @@ public class XiaoyiActivity extends Activity {
 		        builder.setPositiveButton("确认",  
 		                new DialogInterface.OnClickListener() {  
 		                    public void onClick(DialogInterface dialog, int whichButton) {  
-		                    	mXiaoyiAge.setText(getText(R.string.xiaoyi_age_prefx) + edtInput.getText().toString() + 
-		                    			getText(R.string.xiaoyi_age_fx)); 
+		                    	mXiaoyiAgeStr = edtInput.getText().toString() + getString(R.string.xiaoyi_age_fx) ;
+		                    	mXiaoyi.setAge(mXiaoyiAgeStr);
+		                    	// update UI
+		                    	mXiaoyiAge.setText( getString(R.string.xiaoyi_age_prefx) + mXiaoyiAgeStr ); 
 		                    	String ip = ((MainApplication) getApplication()).getXiaoyi().getHostIp();
-		                    	new Thread(new SendXiaoyiNameRunnable(ip, 
-		                    			edtInput.getText().toString() + getText(R.string.xiaoyi_age_fx),
-		                    			WifiP2pConfigInfo.COMMAND_ID_XIAOYI_AGE)).start();
-//		                    	ContentResolver cr = XiaoyiActivity.this.getContentResolver();
-//		                		ContentValues values = new ContentValues();
-//		                		
-//		                		values.put("COLUMN_XIAOYI_AGE", edtInput.getText().toString() + getText(R.string.xiaoyi_age_fx));
-//		                	    cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+		                    	new Thread(new SendXiaoyiInfoRunnable( ip , mXiaoyi )).start();
 		                    }  
 		                });  
 		        builder.show();  
@@ -209,16 +210,14 @@ public class XiaoyiActivity extends Activity {
 		});
 	}
 	
-	class SendXiaoyiNameRunnable implements Runnable {
+	class SendXiaoyiInfoRunnable implements Runnable {
 
 		private String mIp;
-		private String mClockMsg;
-		private int cmd;
+		private XiaoYi xiaoyi;
 
-		SendXiaoyiNameRunnable(String ip, String msg,int cmd) {
+		SendXiaoyiInfoRunnable(String ip, XiaoYi yi) {
 			mIp = ip;
-			mClockMsg = msg;
-			this.cmd = cmd;
+			this.xiaoyi = yi;
 		}
 
 		@Override
@@ -239,12 +238,13 @@ public class XiaoyiActivity extends Activity {
 
 				Logger.d(TAG, "Client socket - " + socket.isConnected());
 				OutputStream stream = socket.getOutputStream();
-				// send cmd
-				stream.write(this.cmd);
+				String sendMsg = xiaoyi.getName() + ":" + xiaoyi.getAge();
+				// send msg
+				stream.write( WifiP2pConfigInfo.COMMAND_ID_XIAOYI_NAME );
 				// send data
-				stream.write(mClockMsg.getBytes("UTF-8"));
+				stream.write(sendMsg.getBytes("UTF-8"));
 
-				Logger.d(TAG, "Client: Data written strSend:" + mClockMsg);
+				Logger.d(TAG, "Client: Data written strSend:" + sendMsg);
 			} catch (IOException e) {
 				Logger.e(TAG, e.getMessage());
 			} finally {

@@ -1,15 +1,21 @@
 package com.haier.xiaoyi.client;
 
 import android.app.Application;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
 import com.haier.xiaoyi.client.controller.WifiP2pActivityListener;
 import com.haier.xiaoyi.client.controller.WifiP2pService;
+import com.haier.xiaoyi.client.module.WifiP2pConfigInfo;
 import com.haier.xiaoyi.client.util.Logger;
 
 public class MainApplication extends Application {
@@ -67,6 +73,22 @@ public class MainApplication extends Application {
 	private void initDevice(){
 		mXiaoyi.setBright(getScreenBrightness());
 		mXiaoyi.setVolice(getDeviceVoice());
+		
+		if(!WifiP2pConfigInfo.isDebug){
+			// set setting
+			ContentResolver cr = getContentResolver();
+    		Cursor cursor = cr.query( Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS") , null, null, null, null );
+    		if(cursor == null || cursor.getCount() <= 0){  
+    			return;
+    		}
+    		String name = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
+    		String age = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
+    		
+    		if( !TextUtils.isEmpty(name) && !TextUtils.isEmpty(age) ){
+        		mXiaoyi.setName(name);
+        		mXiaoyi.setAge(age);
+    		}
+		}
 	}
 	
 	/**

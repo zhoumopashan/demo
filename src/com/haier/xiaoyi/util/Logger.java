@@ -2,9 +2,11 @@ package com.haier.xiaoyi.util;
 
 import android.util.Log;
 
+import com.haier.xiaoyi.wifip2p.module.WifiP2pConfigInfo;
+
 public class Logger {
     private static final String TAG = "luodemo";
-    public static final boolean LOGABLE = true;
+    public static final boolean LOGABLE = WifiP2pConfigInfo.isDebug;
 
     public static void d(String alt, String msg) {
         if (LOGABLE) {

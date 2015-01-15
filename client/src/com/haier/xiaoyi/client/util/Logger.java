@@ -1,10 +1,12 @@
 package com.haier.xiaoyi.client.util;
 
+import com.haier.xiaoyi.client.module.WifiP2pConfigInfo;
+
 import android.util.Log;
 
 public class Logger {
     private static final String TAG = "luodemo";
-    public static final boolean LOGABLE = true;
+    public static final boolean LOGABLE = WifiP2pConfigInfo.isDebug;
 
     public static void d(String alt, String msg) {
         if (LOGABLE) {

@@ -2,6 +2,8 @@ package com.haier.xiaoyi.wifip2p.module;
 
 public class WifiP2pConfigInfo {
 	
+	public static final boolean isDebug = false;
+	
 	public static final int MSG_NULL = 20;
 	public static final int MSG_RECV_PEER_INFO = 21;
 	public static final int MSG_REPORT_SEND_PEER_INFO_RESULT = 22;
