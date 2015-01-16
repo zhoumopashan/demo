@@ -81,6 +81,7 @@ public class MainApplication extends Application {
     		if(cursor == null || cursor.getCount() <= 0){  
     			return;
     		}
+    		cursor.moveToFirst();
     		String name = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
     		String age = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
     		
