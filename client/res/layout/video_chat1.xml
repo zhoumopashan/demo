@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <com.haier.xiaoyi.videochat.HaierVideoView
+    <com.haier.xiaoyi.client.videochat.HaierVideoView
         android:id="@+id/video_chat_myview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
