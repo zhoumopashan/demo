@@ -81,13 +81,25 @@ public class MainApplication extends Application {
     		if(cursor == null || cursor.getCount() <= 0){  
     			return;
     		}
+    		if(cursor.getColumnIndex("COLUMN_XIAOYI_NAME") == -1){
+    			Logger.e("initDevice error","  column index is -1");
+    			return;
+    		}
+    		
+    		cursor.moveToNext();
+//    		int nameIndex = cursor.getColumnIndex("COLUMN_XIAOYI_NAME");
+    		Logger.d("initDevice","index1: " + cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
+    		Logger.d("initDevice","index2: " + cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
     		String name = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
     		String age = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
+    		
+    		Logger.d("initDevice","name: " + name + ",age: " + age);
     		
     		if( !TextUtils.isEmpty(name) && !TextUtils.isEmpty(age) ){
         		mXiaoyi.setName(name);
         		mXiaoyi.setAge(age);
     		}
+    		cursor.close();
 		}
 	}
 	

@@ -769,8 +769,8 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 				// set setting
 				ContentResolver cr = getContentResolver();
 	    		ContentValues values = new ContentValues();
-		    	values.put("COLUMN_XIAOYI_NAME", strBuffer);
-		    	values.put("COLUMN_XIAOYI_AGE", strBuffer);
+		    	values.put("COLUMN_XIAOYI_NAME", name);
+		    	values.put("COLUMN_XIAOYI_AGE", age);
 		    	cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
 			}
 
