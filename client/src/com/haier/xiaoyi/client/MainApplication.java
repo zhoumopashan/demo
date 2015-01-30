@@ -2,7 +2,6 @@ package com.haier.xiaoyi.client;
 
 import android.app.Application;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -81,15 +80,8 @@ public class MainApplication extends Application {
     		if(cursor == null || cursor.getCount() <= 0){  
     			return;
     		}
-    		if(cursor.getColumnIndex("COLUMN_XIAOYI_NAME") == -1){
-    			Logger.e("initDevice error","  column index is -1");
-    			return;
-    		}
     		
-    		cursor.moveToNext();
-//    		int nameIndex = cursor.getColumnIndex("COLUMN_XIAOYI_NAME");
-    		Logger.d("initDevice","index1: " + cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
-    		Logger.d("initDevice","index2: " + cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
+    		cursor.moveToFirst();
     		String name = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
     		String age = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
     		

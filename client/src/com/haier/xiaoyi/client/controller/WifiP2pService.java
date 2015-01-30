@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WpsInfo;
@@ -761,24 +762,58 @@ public class WifiP2pService extends Service implements ChannelListener, WifiP2pS
 			age = strBuffer.split(":")[1];
 			Logger.d(TAG, "name:" + name + ",age :" + age);
 			
-			// set application
-			( (MainApplication)getApplication()).getXiaoyi().setName(name);
-			( (MainApplication)getApplication()).getXiaoyi().setAge(age);
+
 			
 			if(!WifiP2pConfigInfo.isDebug){
+				Logger.d(TAG,"setting xiaoyi's name :" + name + "," + age);
 				// set setting
 				ContentResolver cr = getContentResolver();
 	    		ContentValues values = new ContentValues();
 		    	values.put("COLUMN_XIAOYI_NAME", name);
 		    	values.put("COLUMN_XIAOYI_AGE", age);
-		    	cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+		    	
+		    	if(!isXiaoyiEmpty()){
+		    		Logger.d(TAG,"not empty");
+		    		cr.update(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values ,null ,null);
+		    	}else{
+		    		Logger.d(TAG,"empty");
+		    		cr.insert(Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS"), values);
+		    	}
 			}
+			
+			// set application
+			( (MainApplication)getApplication()).getXiaoyi().setName(name);
+			( (MainApplication)getApplication()).getXiaoyi().setAge(age);
 
 			return true;
 		} catch (IOException e) {
 			Logger.e(TAG, e.getMessage());
 			return false;
 		}
+	}
+	
+	public boolean isXiaoyiEmpty(){
+		// set setting
+		ContentResolver cr = getContentResolver();
+		Cursor cursor = cr.query( Uri.parse("content://com.haier.xiaoyi.settings/XIAOYI_SETTINGS") , null, null, null, null );
+		if(cursor == null || cursor.getCount() <= 0){  
+			cursor.close();
+			return true;
+		}
+		
+		cursor.moveToFirst();
+		String name = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_NAME"));
+		String age = cursor.getString(cursor.getColumnIndex("COLUMN_XIAOYI_AGE"));
+		
+		Logger.d("initDevice","name: " + name + ",age: " + age);
+		
+		if( TextUtils.isEmpty(name) || TextUtils.isEmpty(age) ){
+			cursor.close();
+    		return true;
+		}
+		
+		cursor.close();
+		return false;
 	}
 	
 	

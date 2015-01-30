@@ -18,8 +18,8 @@ public class XiaoYi {
 	private boolean mIsWifiAvailable = false;
 	
 	// xiaoyi info
-	private String mName = "大伊";
-	private String mAge = "18岁";
+	private String mName = "小伊";
+	private String mAge = "6岁";
 
 	public int getVolice() {
 		return mVolice;

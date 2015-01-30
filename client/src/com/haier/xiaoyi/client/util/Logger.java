@@ -1,7 +1,5 @@
 package com.haier.xiaoyi.client.util;
 
-import com.haier.xiaoyi.client.module.WifiP2pConfigInfo;
-
 import android.util.Log;
 
 public class Logger {
